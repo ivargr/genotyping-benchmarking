@@ -1,0 +1,61 @@
+
+N_INDIVIDUALS=[5, 15, 30]  #, 50, 100, 250, 500, 1000, 2500]  #, 40, 50, 100, 200, 2058]
+WEB_FIGURE_DIR="/var/www/html/genotyping_figures/"
+
+def figure2_file_names(wildcards):
+    return ",".join(["data/dataset1/happy-hg002-us_hg002_simulated_reads_15x." + str(i) + "individuals.summary.csv" for i in N_INDIVIDUALS] + \
+         ["data/dataset1/happy-hg002-pangenie_hg002_simulated_reads_15x." + str(i) + "individuals.summary.csv" for i in N_INDIVIDUALS])
+
+def figure2_names(wildcards):
+    return ",".join(["us" for i in N_INDIVIDUALS] \
+        + ["pangenie" for i in N_INDIVIDUALS])
+
+rule figure1:
+    input:
+        malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.summary.csv",
+        us="data/dataset1/happy-hg002-us_hg002_simulated_reads_15x.2058individuals.summary.csv",
+        us_no_model="data/dataset1/happy-hg002-nomodel_us_hg002_simulated_reads_15x.summary.csv"
+    output:
+        "figure1.html"
+    shell:
+        "genotyping_analysis plot_results_files -f {input.malva},{input.us},{input.us_no_model} -n malva,us,nomodel -o {output}"
+
+
+rule figure2:
+    input:
+        expand("data/dataset1/happy-hg002-us_hg002_simulated_reads_15x.{n_individuals}individuals.summary.csv", n_individuals=N_INDIVIDUALS),
+        expand("data/dataset1/happy-hg002-pangenie_hg002_simulated_reads_15x.{n_individuals}individuals.summary.csv", n_individuals=N_INDIVIDUALS),
+        malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.summary.csv",
+        pangenie="data/dataset1/happy-hg002-pangenie_hg002_simulated_reads_15x.10individuals.summary.csv",
+        us_no_model="data/dataset1/happy-hg002-nomodel_us_hg002_simulated_reads_15x.summary.csv"
+    output:
+        "figure2.html"
+    params:
+        file_names=figure2_file_names,
+        names=figure2_names,
+    shell:
+        "genotyping_analysis plot_results_files -f {input.malva},{params.file_names} -n malva,{params.names} -o {output}"
+
+
+rule figure3:
+    input:
+        us_no_model = "data/dataset1/happy-hg002-nomodel_us_hg002_simulated_reads_15x.summary.csv",
+        graphtyper = "data/dataset1/happy-hg002-graphtyper_hg002_simulated_reads_15x.summary.csv",
+        bayestyper = "data/dataset1/happy-hg002-bayestyper_hg002_simulated_reads_15x.summary.csv",
+        gatk = "data/dataset1/happy-hg002-gatk_hg002_simulated_reads_15x.summary.csv"
+    output:
+        "figure3.html"
+    shell:
+        "genotyping_analysis plot_results_files -f {input.us_no_model},{input.graphtyper},{input.bayestyper},{input.gatk} -n us,graphtyper,bayestyper,gatk -o {output}"
+
+
+rule move_figures:
+    input:
+        "{figure}.html"
+    output:
+        "/var/www/html/genotyping_figures/{figure}.html"
+    shell:
+        "cp {input} {output}"
+
+
+

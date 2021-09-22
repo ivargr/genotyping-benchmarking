@@ -1,0 +1,69 @@
+include:
+    "alignment_free_graph_genotyper_prepare.smk"
+
+def get_dataset_n_nodes(wildcards):
+    return config["analysis_regions"][wildcards.dataset]["n_nodes"]
+
+rule map:
+    input:
+        reads="data/{dataset}/{experiment}.fa",
+        kmer_index_only_variants="data/{dataset}/kmer_index_only_variants.npz"
+    output:
+        node_counts="data/{dataset}/{experiment}.I{max_index_frequency}.node_counts.npy"
+    params:
+        n_nodes=get_dataset_n_nodes
+    shell:
+        "alignment_free_graph_genotyper count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
+
+
+rule genotype:
+    input:
+        node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        variants="data/{dataset}/variants_no_overlaps_no_genotypes.vcf",
+        genotype_model="data/{dataset}/genotype_model.npz",
+        genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals}individuals.npz",
+        most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup.npz",
+        transition_probs="data/{dataset}/transition_probs_{n_individuals}individuals.npy",
+        tricky_variants="data/{dataset}/tricky_variants.npy",
+    output:
+        genotypes="data/{dataset}/us_{experiment}.{n_individuals,\d+}individuals.vcf"
+    threads:
+        config["n_threads"]
+    shell:
+        "alignment_free_graph_genotyper genotype -c {input.node_counts} "
+        "-g {input.variant_to_nodes} " 
+        "-v {input.variants} " 
+        "-m {input.genotype_model} " 
+        "-G {input.genotype_frequencies} " 
+        "-M {input.most_similar_variant_lookup} " 
+        "-o {output.genotypes} " 
+        "-C NumpyGenotyper " 
+        "-t 4 -z 500000 -a 2.0 -q 0.9 " 
+        "-p {input.transition_probs} " 
+        "-x {input.tricky_variants}"
+
+
+rule genotype_without_using_modelled_counts:
+    input:
+        node_counts="data/{dataset}/{experiment}.I1.node_counts.npy",
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        variants="data/{dataset}/variants_no_overlaps_no_genotypes.vcf",
+        genotype_frequencies="data/{dataset}/genotype_frequencies_naive.npz",
+        tricky_variants="data/{dataset}/tricky_variants_nonunique_kmers.npy",
+    output:
+        genotypes="data/{dataset}/nomodel_us_{experiment}.vcf"
+    threads:
+        config["n_threads"]
+    shell:
+        "alignment_free_graph_genotyper genotype -c {input.node_counts} "
+        "-g {input.variant_to_nodes} "
+        "-v {input.variants} "
+        "-G {input.genotype_frequencies} "
+        "-o {output.genotypes} "
+        "-C NumpyGenotyper "
+        "-t 4 -z 500000 -a 1.0 -u True -z 6000 "
+        "-x {input.tricky_variants}"
+
+
+
