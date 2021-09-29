@@ -12,6 +12,9 @@ rule map:
         node_counts="data/{dataset}/{experiment}.I{max_index_frequency}.node_counts.npy"
     params:
         n_nodes=get_dataset_n_nodes
+    threads: config["n_threads"]
+    benchmark:
+        "data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
     shell:
         "alignment_free_graph_genotyper count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
 
@@ -23,13 +26,15 @@ rule genotype:
         variants="data/{dataset}/variants_no_overlaps_no_genotypes.vcf",
         genotype_model="data/{dataset}/genotype_model.npz",
         genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals}individuals.npz",
-        most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup.npz",
+        most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}individuals.npz",
         transition_probs="data/{dataset}/transition_probs_{n_individuals}individuals.npy",
         tricky_variants="data/{dataset}/tricky_variants.npy",
     output:
-        genotypes="data/{dataset}/us_{experiment}.{n_individuals,\d+}individuals.vcf"
+        genotypes="data/{dataset}/usN{n_individuals,\d+}_{experiment,[a-z0-9_]+}.vcf.gz"
     threads:
-        config["n_threads"]
+        4
+    benchmark:
+        "data/{dataset}/benchmarks/usN{n_individuals}_{experiment}.tsv"
     shell:
         "alignment_free_graph_genotyper genotype -c {input.node_counts} "
         "-g {input.variant_to_nodes} " 
@@ -37,11 +42,22 @@ rule genotype:
         "-m {input.genotype_model} " 
         "-G {input.genotype_frequencies} " 
         "-M {input.most_similar_variant_lookup} " 
-        "-o {output.genotypes} " 
+        "-o {output.genotypes}.tmp " 
         "-C NumpyGenotyper " 
         "-t 4 -z 500000 -a 2.0 -q 0.9 " 
         "-p {input.transition_probs} " 
-        "-x {input.tricky_variants}"
+        "-x {input.tricky_variants} "
+        "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
+
+
+# hack to run genotyper with 2058 individuals if none are specified
+rule genotype_wrapper:
+    input:
+        genotypes = "data/{dataset}/usN2058_{experiment}.vcf.gz"
+    output:
+        genotypes = "data/{dataset}/us_{experiment,[a-z0-9_]+}.vcf.gz"
+    shell:
+        "cp {input} {output}"
 
 
 rule genotype_without_using_modelled_counts:
@@ -52,18 +68,19 @@ rule genotype_without_using_modelled_counts:
         genotype_frequencies="data/{dataset}/genotype_frequencies_naive.npz",
         tricky_variants="data/{dataset}/tricky_variants_nonunique_kmers.npy",
     output:
-        genotypes="data/{dataset}/nomodel_us_{experiment}.vcf"
+        genotypes="data/{dataset}/nomodel_us_{experiment}.vcf.gz"
     threads:
-        config["n_threads"]
+        4
     shell:
         "alignment_free_graph_genotyper genotype -c {input.node_counts} "
         "-g {input.variant_to_nodes} "
         "-v {input.variants} "
         "-G {input.genotype_frequencies} "
-        "-o {output.genotypes} "
+        "-o {output.genotypes}.tmp "
         "-C NumpyGenotyper "
         "-t 4 -z 500000 -a 1.0 -u True -z 6000 "
         "-x {input.tricky_variants}"
+        "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
 
 
 

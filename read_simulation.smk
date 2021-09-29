@@ -1,12 +1,16 @@
 def get_simulation_tmp_datasets(wildcards):
     haplotypes = [0, 1]
-    chromosomes = config["analysis_regions"][wildcards.dataset]["chromosomes"].split()
+    chromosomes = config["analysis_regions"][wildcards.dataset]["simulation_chromosomes"].split()
     files = []
     for chromosome in chromosomes:
         for haplotype in haplotypes:
             files.append("data/" + wildcards.dataset + "/" + wildcards.truth_dataset + "_raw_simulated_reads_chromosome" + chromosome + "_haplotype" + str(haplotype) + "_coverage" + wildcards.coverage + ".txt")
 
     return files
+
+
+def get_real_data_reads_url(wildcards):
+    return config["truth_datasets"][wildcards.truth_dataset]["reads_url"]
 
 
 rule prepare_simulation:
@@ -50,24 +54,28 @@ rule get_real_raw_reads:
     output:
         reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
         #reads="data/{dataset}/{truth_dataset}_real_reads_{coverage,\d+}x.fq",
+    params:
+        url=get_real_data_reads_url
     shell:
-        "wget -O - {config[truth_datasets][wildcards.truth_dataset}][reads_url]} | bedtools bamtofastq -i /dev/stdin -fq /dev/stdout | gzip > {output.reads}"
+        "wget -O - {params.url} | bedtools bamtofastq -i /dev/stdin -fq /dev/stdout | gzip > {output.reads}"
 
 
 rule downsample_real_reads:
     input:
-        reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
+        rules.get_real_raw_reads.output
+        #reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
     output:
-        reads="data/{dataset}/{truth_dataset}_real_reads.fq",
+        reads="data/{dataset}/{truth_dataset}_real_reads_15x.fq",
     shell:
-        "zcat {input.reads} | python3 scripts/downsample_fq.py 4 | gzip > {output.reads}"
+        "zcat {input.reads} | python3 scripts/downsample_fq.py 4 > {output.reads}"
 
 
 rule convert_real_reads_to_fa:
     input:
-        "data/{dataset}/{truth_dataset}_real_reads.fq",
+        rules.downsample_real_reads.output
+        #"data/{dataset}/{truth_dataset}_real_reads_15x.fq",
     output:
-        "data/{dataset}/{truth_dataset}_real_reads.fa",
+        "data/{dataset}/{truth_dataset}_real_reads_15x.fa",
     shell:
-        "gunzip -c {input} | seqtk seq -A | gzip > {output}"
+        "cat {input} | seqtk seq -A > {output}"
 

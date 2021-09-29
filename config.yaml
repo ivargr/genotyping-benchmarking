@@ -6,13 +6,16 @@ k:
   31
 
 n_threads:
-  32
+  16
+
+n_threads_data:
+  35
 
 hg38_2bit_file:
   "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit"
 
 chromosomes:
-  "1 2 3 3 4 4 5 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X"
+  "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X"
 
 thousand_genomes_vcf:
   "http://ivarg.ddns.net/variants.vcf.gz"
@@ -22,12 +25,14 @@ analysis_regions:
       region: "1:1-5000000"
       genome_size: "5000000"
       chromosomes: "1"
+      simulation_chromosomes: "1"
       n_nodes: "5000000"
   dataset2:
-      region: "1 2 3 3 4 4 5 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X"
+      region: "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X"
       genome_size: "3031000000"
       #chromosomes: "1 2 3 3 4 4 5 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X"
-      chromosomes: "21 22"
+      chromosomes: "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X"
+      simulation_chromosomes: "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22"
       n_nodes: "84000000"
 
 
@@ -35,4 +40,5 @@ truth_datasets:
   hg002:
     vcf_url: "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/release/AshkenazimTrio/HG002_NA24385_son/NISTv3.3.2/GRCh38/HG002_GRCh38_GIAB_highconf_CG-Illfb-IllsentieonHC-Ion-10XsentieonHC-SOLIDgatkHC_CHROM1-22_v.3.3.2_highconf_triophased.vcf.gz"
     regions_url : "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/release/AshkenazimTrio/HG002_NA24385_son/NISTv3.3.2/GRCh38/HG002_GRCh38_GIAB_highconf_CG-Illfb-IllsentieonHC-Ion-10XsentieonHC-SOLIDgatkHC_CHROM1-22_v.3.3.2_highconf_noinconsistent.bed"
+    #reads_url: "http://ivarg.ddns.net/HG002run1_s1_testsample_v2.bam"
     reads_url: "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_HiSeq_HG002_Homogeneity-10953946/HG002Run01-11419412/HG002run1_S1.bam"

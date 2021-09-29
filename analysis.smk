@@ -59,10 +59,12 @@ rule run_happy:
     shell:
         "/root/hap.py-install/bin/hap.py {input.truth_vcf} {input.genotypes} --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run} -f {input.truth_regions_file} --no-decompose --engine=vcfeval"
 
+"""
 rule bgzip_result_file:
     input: "data/{dataset}/{method}_{reads}.{n_individuals,\d+}individuals.vcf"
     output: "data/{dataset}/{method}_{reads}.{n_individuals,\d+}individuals.vcf.gz"
     shell: "bgzip -f -c {input} > {output} && tabix -p vcf {output}"
+"""
 
 
 

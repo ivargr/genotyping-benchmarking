@@ -36,13 +36,18 @@ rule prepare_dataset_reference:
     params:
         regions=get_dataset_regions
     shell:
-        "samtools faidx {input} {params.regions} | python3 scripts/format_fasta_header.py > {output.full_reference} && "
+        "samtools faidx {input} {params.regions} | python3 scripts/format_fasta_header.py > {output.full_reference} "
         #"samtools faidx {output.full_reference}"
 
 rule make_flat_reference:
     input: "data/{d}/ref.fa"
-    output: "data/{d}/ref_flat.fa"
-    shell: "grep -v '^>' {input} > {input}.no-headers && echo -e \">ref\n$(cat {input}.no-headers)\" > {output}"
+    output:
+        fasta="data/{d}/ref_flat.fa",
+        index="data/{d}/ref_flat.fa.fai"
+    #shell: "grep -v '^>' {input} > {input}.no-headers && echo -e \">ref\n$(cat {input}.no-headers)\" > {output.fasta} && samtools faidx {output.fasta}"
+    #shell: "grep -v '^>' {input} > {output.fasta}.tmp && echo '>ref' > {output.fasta} && cat {output.fasta}.tmp >> {output.fasta} && samtools faidx {output.fasta}"
+    shell:
+        r"""python3 scripts/make_flat_reference.py {input} | sed -e 's/.\{{80\}}/&\n/g' > {output.fasta} && samtools faidx {output.fasta}"""
 
 rule remove_overlapping_variants:
     input:
