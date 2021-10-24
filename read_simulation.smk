@@ -67,7 +67,7 @@ rule downsample_real_reads:
     output:
         reads="data/{dataset}/{truth_dataset}_real_reads_15x.fq",
     shell:
-        "zcat {input.reads} | python3 scripts/downsample_fq.py 4 > {output.reads}"
+        "zcat {input} | python3 scripts/downsample_fq.py 4 > {output.reads}"
 
 
 rule convert_real_reads_to_fa:

@@ -82,8 +82,14 @@ rule create_vcf_with_subsample_of_individuals:
         vcf="data/{dataset}/variants_no_overlaps_{n_individuals}individuals.vcf.gz"
     shell:
         "head -n {wildcards.n_individuals} {input.sample_names_random} > {output.subsamples} && "
-        "bcftools view -O z -S {input.sample_names_random} {input.vcf} > {output.vcf}"
+        "bcftools view -O z -S {output.subsamples} {input.vcf} > {output.vcf}"
 
+
+rule prepare_vcf_for_pangenie:
+    input: "data/{dataset}/variants_no_overlaps_{n_individuals}individuals.vcf.gz"
+    output: "data/{dataset}/variants_no_overlaps_{n_individuals}individuals_for_pangenie.vcf.gz"
+    shell:
+        "zcat {input} python3 scripts/"
 
 
 rule uncompress_subsampled_vcf:

@@ -1,6 +1,7 @@
 configfile: "config.yaml"
 
 DATASETS = ["dataset1", "dataset2"]
+WEB_PATH = "/var/www/html/genotyping_figures/"
 
 include:
     "analysis.smk"
@@ -16,7 +17,11 @@ ruleorder:
 
 rule all:
     input:
-        "table1.html"
+        WEB_PATH + "figure1.html"
+        #WEB_PATH + "table4.html",
+        #WEB_PATH + "table3.html",
+        #WEB_PATH + "figure4.html",
+        #WEB_PATH + "table2.html"
         #"/var/www/html/genotyping_figures/table1.html"
         #"/var/www/html/genotyping_figures/figure3.html"
         #"data/dataset1/hg002_real_reads_15x.fa"

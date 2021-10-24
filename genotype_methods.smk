@@ -15,7 +15,7 @@ rule run_kmc:
         mem_gb=20
     shell:
         "mkdir -p kmc_tmp && "
-        "kmc -ci0 -m8 -k41 -t{config[n_threads]} -fm {input} data/{wildcards.dataset}/{wildcards.reads}.kmc.out kmc_tmp"
+        "kmc -ci0 -m8 -k43 -t{config[n_threads]} -fm {input} data/{wildcards.dataset}/{wildcards.reads}.kmc.out kmc_tmp"
 
 
 rule run_malva:
@@ -32,7 +32,7 @@ rule run_malva:
         mem_gb=100
     threads: 4
     shell:
-        "malva-geno -k 35 -r 41 -b 16 {input.ref} {input.variants} data/{wildcards.dataset}/{wildcards.reads}.kmc.out > {output.genotypes}.tmp && "
+        "malva-geno -k 35 -r 43 -b 16 {input.ref} {input.variants} data/{wildcards.dataset}/{wildcards.reads}.kmc.out > {output.genotypes}.tmp && "
         # convert nan quality to 0
         """awk '{{ $6 = ($6 == "nan" ? 0 : $6) }} 1' OFS="\\t" {output.genotypes}.tmp | bgzip -c > {output.genotypes}"""
         #"malva-geno call -k 35 -r 41 -b 16 {input.ref} {input.variants} {wildcards.reads}.kmc.out > {output.genotypes}"
@@ -60,12 +60,13 @@ rule run_pangenie:
     threads:
         config["n_threads"]
     resources:
-        mem_gb=200
+        mem_gb=100
     benchmark:
-        "data/{dataset}/benchmarks/pangenie_{reads}.{n_individuals}individuals.tsv"
+        #"data/{dataset}/benchmarks/pangenie_{reads}.{n_individuals}individuals.tsv"
+        "data/{dataset}/benchmarks/pangenieN{n_individuals}_{reads}.tsv"
     shell:
         "PanGenie -i {input.reads} -r {input.ref} -v {input.variants} -j 32 -k 31 -t {config[n_threads]} -g -o {output.genotypes} && mv {output.genotypes}_genotyping.vcf {output.genotypes} && "
-        "bgzip -f -c {output.genotypes} > {output.genotypes_gz} && tabix -p vcf {output.genotypes_gz}"
+        "bgzip -f -c {output.genotypes} > {output.genotypes_gz} && tabix -f -p vcf {output.genotypes_gz}"
 
 
 # hack to run pangenie with 32 individuals if none are specified
@@ -75,7 +76,7 @@ rule pangenie_wrapper:
     output:
         genotypes = "data/{dataset}/pangenie_{experiment,[a-z0-9_]+}.vcf.gz"
     shell:
-        "cp {input} {output}"
+        "cp {input} {output} && tabix -f -p vcf {output}"
 
 
 rule map_reads_to_reference:
@@ -111,10 +112,10 @@ rule run_graphtyper:
     benchmark:
         "data/{dataset}/benchmarks/graphtyper_{reads}.tsv"
     shell:
-        "rm -rf results && "
+        "rm -rf graphtyper_results_{wildcards.reads} && "
         "python3 scripts/run_graphtyper_in_parallel.py 2500000 {input.fai} "
-        "| parallel --line-buffer -j {config[n_threads]} 'graphtyper genotype {input.ref} --sam={input.sorted_bam} --region={{}} --threads=1 --vcf {input.variants}' && "
-        "find results/* -name '*.vcf.gz' | sort > vcf_file_list && "
+        "| parallel --line-buffer -j {config[n_threads]} 'graphtyper genotype {input.ref} --output=graphtyper_results_{wildcards.reads} --sam={input.sorted_bam} --region={{}} --threads=1 --vcf {input.variants}' && "
+        "find graphtyper_results_{wildcards.reads}/* -name '*.vcf.gz' | sort > vcf_file_list && "
         "bcftools concat --naive --file-list vcf_file_list -Oz | bcftools sort -Oz > {output.genotypes}"
 
 
@@ -214,9 +215,12 @@ rule run_gatk:
         mem_gb=50
     shell:
         "rm -f data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf && "
-        "python3 scripts/partition_genome.py 40000000 {input.fai} | "
+        "python3 scripts/partition_genome.py 20000000 {input.fai} | "
         "parallel --line-buffer -j {config[n_threads]} /home/ivar/dev/gatk-4.1.9.0/gatk HaplotypeCaller "
-        "--reference {input.ref} --input {input.sorted_bam} --output data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_{{}}.vcf --intervals {{}} "
+        "--reference {input.ref} --input {input.sorted_bam} --native-pair-hmm-threads 1 --output data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_{{}}.vcf --intervals {{}} "
         "--minimum-mapping-quality 20 --alleles {input.variants} && "
-        "bcftools concat -O z data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf > {output.genotypes}"
+        "ls data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf | xargs -P 16 -n 1 bgzip && "
+        "ls data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf.gz | xargs -P 16 -n 1 tabix -f -p vcf && "
+        "python3 scripts/partition_genome.py 20000000 data/{wildcards.dataset}/ref.fa.fai 'data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_---.vcf.gz' > gatk_file_list && "
+        "bcftools concat -a -O z --file-list gatk_file_list | bcftools sort -O z > {output.genotypes}"
         #"cat gatk_genotypes.vcf | awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k2,2n"}' > gatk_genotypes_sorted.vcf

@@ -13,7 +13,8 @@ method_jobs  = {
     "gatk": ["bwamem", "gatk"],
     "graphtyper": ["bwamem", "graphtyper"],
     "malva": ["malva_kmc", "malva"],
-    "us": ["mapI1000", "usN2058"]
+    "us": ["mapI1000", "usN2058"],
+    "pangenie": ["pangenieN32"]
 }
 
 methods = method_names.split(",")
@@ -26,7 +27,7 @@ def get_run_time(job_name, experiment, dataset):
     file_name = "data/" + dataset + "/benchmarks/" + job_name + "_" + experiment + ".tsv"
     lines = list(open(file_name).readlines())
     line = lines[1].split()
-    run_time = round(float(line[0]) / (60*60), 1)
+    run_time = float(line[0]) / (60*60)
     return run_time
 
 
@@ -34,7 +35,7 @@ def get_memory(job_name, experiment, dataset):
     file_name = "data/" + dataset + "/benchmarks/" + job_name + "_" + experiment + ".tsv"
     lines = list(open(file_name).readlines())
     line = lines[1].split()
-    memory = round(float(line[2])/1e6, 2)  # GBs
+    memory = round(float(line[2])/1000, 2)  # GBs
     return memory
 
 def get_accuracy(method_name):
@@ -49,7 +50,7 @@ def get_accuracy(method_name):
     return [indels_recall, indels_precision, snps_recall, snps_precision]
 
 for method in methods:
-    run_times[method] = sum([get_run_time(job_name, experiment, dataset) for job_name in method_jobs[method]])
+    run_times[method] = round(sum([get_run_time(job_name, experiment, dataset) for job_name in method_jobs[method]]), 1)
     memory_usage[method] = max([get_memory(job_name, experiment, dataset) for job_name in method_jobs[method]])
     accuracy[method] = get_accuracy(method)
     logging.info("Method %s has total run time %d sec and max memory %d bytes" % (method, run_times[method], memory_usage[method]))
