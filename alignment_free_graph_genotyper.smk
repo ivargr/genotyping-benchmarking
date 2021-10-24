@@ -29,7 +29,7 @@ rule genotype:
     input:
         node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        variants="data/{dataset}/variants_no_overlaps_no_genotypes.vcf",
+        variants="data/{dataset}/variants_no_genotypes.vcf",
         model="data/{dataset}/combination_model.npz",
         genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals}individuals.npz",
         most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}individuals.npz",
@@ -77,7 +77,7 @@ rule genotype_without_using_modelled_counts:
     input:
         node_counts="data/{dataset}/{experiment}.I1.node_counts.npy",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        variants="data/{dataset}/variants_no_overlaps_no_genotypes.vcf",
+        variants="data/{dataset}/variants_no_genotypes.vcf",
         genotype_frequencies="data/{dataset}/genotype_frequencies_naive.npz",
         tricky_variants="data/{dataset}/tricky_variants_nonunique_kmers.npy",
     output:

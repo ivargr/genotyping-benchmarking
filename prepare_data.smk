@@ -49,14 +49,6 @@ rule make_flat_reference:
     shell:
         r"""python3 scripts/make_flat_reference.py {input} | sed -e 's/.\{{80\}}/&\n/g' > {output.fasta} && samtools faidx {output.fasta}"""
 
-rule remove_overlapping_variants:
-    input:
-        "{sample}.vcf.gz"
-    output:
-        vcf="{sample}_no_overlaps.vcf.gz",
-        index="{sample}_no_overlaps.vcf.gz.tbi"
-    shell:
-        "alignment_free_graph_genotyper remove_overlapping_indels -v {input} | bgzip -c > {output.vcf} && tabix -p vcf {output.vcf}"
 
 rule remove_genotype_info:
     input: "{sample}.vcf.gz"
@@ -75,28 +67,21 @@ rule get_all_sample_names_from_vcf:
 
 rule create_vcf_with_subsample_of_individuals:
     input:
-        vcf="data/{dataset}/variants_no_overlaps.vcf.gz",
+        vcf="data/{dataset}/variants.vcf.gz",
         sample_names_random="data/{dataset}/sample_names_random_order.txt"
     output:
         subsamples="data/{dataset}/sample_names_random_order_{n_individuals}.txt",
-        vcf="data/{dataset}/variants_no_overlaps_{n_individuals}individuals.vcf.gz"
+        vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz"
     shell:
         "head -n {wildcards.n_individuals} {input.sample_names_random} > {output.subsamples} && "
         "bcftools view -O z -S {output.subsamples} {input.vcf} > {output.vcf}"
 
 
-rule prepare_vcf_for_pangenie:
-    input: "data/{dataset}/variants_no_overlaps_{n_individuals}individuals.vcf.gz"
-    output: "data/{dataset}/variants_no_overlaps_{n_individuals}individuals_for_pangenie.vcf.gz"
-    shell:
-        "zcat {input} python3 scripts/"
-
-
 rule uncompress_subsampled_vcf:
     input:
-        vcf="data/{dataset}/variants_no_overlaps_{n_individuals,\d+}individuals.vcf.gz"
+        vcf="data/{dataset}/variants_{n_individuals,\d+}individuals.vcf.gz"
     output:
-        vcf="data/{dataset}/variants_no_overlaps_{n_individuals,\d+}individuals.vcf"
+        vcf="data/{dataset}/variants_{n_individuals,\d+}individuals.vcf"
     shell:
         "zcat {input} > {output}"
 

@@ -21,7 +21,7 @@ rule run_kmc:
 rule run_malva:
     input:
         ref="data/{dataset}/ref.fa",
-        variants="data/{dataset}/variants_no_overlaps.vcf.gz",
+        variants="data/{dataset}/variants.vcf.gz",
         kmer_pre="data/{dataset}/{reads}.kmc.out.kmc_pre",
         kmer_suf="data/{dataset}/{reads}.kmc.out.kmc_suf"
     output:
@@ -37,23 +37,11 @@ rule run_malva:
         """awk '{{ $6 = ($6 == "nan" ? 0 : $6) }} 1' OFS="\\t" {output.genotypes}.tmp | bgzip -c > {output.genotypes}"""
         #"malva-geno call -k 35 -r 41 -b 16 {input.ref} {input.variants} {wildcards.reads}.kmc.out > {output.genotypes}"
 
-"""
-rule run_malva_genotyping:
-    input:
-        kmers_pre="data/{dataset}/{reads}.kmc.out.kmc_pre",
-        kmers_suf="data/{dataset}/{reads}.kmc.out.kmc_suf",
-        variants="data/{dataset}/variants_no_overlaps_no_genotypes.vcf",
-        ref="data/{dataset}/ref.fa"
-
-    output:
-        "data/{dataset}/malva_genotypes_{reads}.vcf"
-"""
-
 rule run_pangenie:
     input:
         ref = "data/{dataset}/ref.fa",
         reads="data/{dataset}/{reads}.fa",
-        variants = "data/{dataset}/variants_no_overlaps_{n_individuals}individuals.vcf",
+        variants = "data/{dataset}/variants_{n_individuals}individuals.vcf",
     output:
         genotypes="data/{dataset}/pangenie_{reads}.{n_individuals,\d+}individuals.vcf",
         genotypes_gz="data/{dataset}/pangenie_{reads}.{n_individuals,\d+}individuals.vcf.gz"
@@ -104,7 +92,7 @@ rule run_graphtyper:
         sorted_bam="data/{dataset}/{reads}.mapped.sorted.bam",
         fai="data/{dataset}/ref.fa.fai",
         ref= "data/{dataset}/ref.fa",
-        variants = "data/{dataset}/variants_no_overlaps.vcf.gz",
+        variants = "data/{dataset}/variants.vcf.gz",
     output:
         genotypes="data/{dataset}/graphtyper_{reads}.vcf.gz"
     threads:
@@ -138,10 +126,10 @@ rule run_kmc_bayestyper:
 
 rule make_multiallelic_variants_for_bayestyper:
     input:
-        vcf="data/{dataset}/variants_no_overlaps_no_genotypes.vcf",
+        vcf="data/{dataset}/variants_no_genotypes.vcf",
         ref= "data/{dataset}/ref.fa",
     output:
-        "data/{dataset}/variants_no_overlaps_no_genotypes_multiallelic.vcf"
+        "data/{dataset}/variants_no_genotypes_multiallelic.vcf"
     shell:
         "bcftools norm -m +any -f {input.ref} {input.vcf} > {output}"
 
@@ -175,7 +163,7 @@ rule run_bayestyper:
         decoy="data/{dataset}/decoy.fasta",
         bloomdata="data/{dataset}/{reads}.kmers_bayestyper.bloomData",
         bloommeta="data/{dataset}/{reads}.kmers_bayestyper.bloomMeta",
-        variants="data/{dataset}/variants_no_overlaps_no_genotypes_multiallelic.vcf",
+        variants="data/{dataset}/variants_no_genotypes_multiallelic.vcf",
         samples="data/{dataset}/samples_{reads}.tsv",
     output:
         #units=dynamic("data/{dataset}/tmp_bayestyper_data_{reads}/bayestyper_unit_{unit_id}/variant_clusters.bin")
@@ -204,7 +192,7 @@ rule run_gatk:
         fai="data/{dataset}/ref.fa.fai",
         ref="data/{dataset}/ref.fa",
         dict="data/{dataset}/ref.dict",
-        variants="data/{dataset}/variants_no_overlaps.vcf.gz",
+        variants="data/{dataset}/variants.vcf.gz",
     output:
         genotypes="data/{dataset}/gatk_{reads}.vcf.gz"
     threads:

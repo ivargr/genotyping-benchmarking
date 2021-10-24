@@ -21,7 +21,7 @@ def get_dataset_genome_size(wildcards):
 
 rule make_chromosome_graph:
     input:
-        vcf = "data/{dataset}/variants_no_overlaps.vcf.gz",
+        vcf = "data/{dataset}/variants.vcf.gz",
         reference = "data/{dataset}/ref.fa",
     output:
         "data/{dataset}/obgraph_chr{chromosome}.npz"
@@ -48,7 +48,7 @@ rule merge_chromosome_graphs:
 rule make_variant_to_nodes:
     input:
         graph="data/{dataset}/obgraph.npz",
-        vcf="data/{dataset}/variants_no_overlaps_no_genotypes.vcf"
+        vcf="data/{dataset}/variants_no_genotypes.vcf"
     output:
         "data/{dataset}/variant_to_nodes.npz"
     resources:
@@ -60,8 +60,8 @@ rule make_variant_to_nodes:
 rule make_genotype_matrix:
     input:
         graph="data/{dataset}/obgraph.npz",
-        vcf="data/{dataset}/variants_no_overlaps_{n_individuals}individuals.vcf.gz",
-        vcf_no_genotypes="data/{dataset}/variants_no_overlaps_no_genotypes.vcf"
+        vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz",
+        vcf_no_genotypes="data/{dataset}/variants_no_genotypes.vcf"
     output:
         genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}individuals.npy",
     threads: config["n_threads_data_quarter"]
@@ -114,7 +114,7 @@ rule get_genotype_frequencies:
 
 rule make_naive_genotype_frequencies:
     input:
-        vcf="data/{dataset}/variants_no_overlaps_no_genotypes.vcf"
+        vcf="data/{dataset}/variants_no_genotypes.vcf"
     output:
         genotype_frequencies="data/{dataset}/genotype_frequencies_naive.npz"
     threads: config["n_threads_data"]
@@ -148,7 +148,7 @@ rule make_variant_kmer_index:
     input:
         graph="data/{dataset}/obgraph.npz",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        vcf="data/{dataset}/variants_no_overlaps_no_genotypes.vcf",
+        vcf="data/{dataset}/variants_no_genotypes.vcf",
         linear_kmer_index="data/{dataset}/linear_kmer_index.npz"
     output:
         variant_kmers="data/{dataset}/variant_kmers.npz",
