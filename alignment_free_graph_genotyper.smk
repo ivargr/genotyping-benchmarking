@@ -34,7 +34,7 @@ rule genotype:
         genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals}individuals.npz",
         most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}individuals.npz",
         transition_probs="data/{dataset}/transition_probs_{n_individuals}individuals.npy",
-        tricky_variants="data/{dataset}/tricky_variants.npy",
+        #tricky_variants="data/{dataset}/tricky_variants.npy",
     output:
         genotypes="data/{dataset}/usN{n_individuals,\d+}_{experiment,[a-z0-9_]+}.vcf.gz"
     threads:
@@ -54,11 +54,11 @@ rule genotype:
         "-o {output.genotypes}.tmp " 
         "-C CombinationModelGenotyper " 
         "-t 10 -z 2000000 "
-        "-a 2.0 -q -3 " 
+        "-q 80 " 
         "-p {input.transition_probs} " 
         #"--average-coverage {params.read_coverage} "
-        "--average-coverage 1 "
-        "-x {input.tricky_variants} "
+        "--average-coverage 5.0 "
+        #"-x {input.tricky_variants} "
         "--sample-name-output {params.sample_name} "
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
 

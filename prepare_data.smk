@@ -71,10 +71,22 @@ rule create_vcf_with_subsample_of_individuals:
         sample_names_random="data/{dataset}/sample_names_random_order.txt"
     output:
         subsamples="data/{dataset}/sample_names_random_order_{n_individuals}.txt",
-        vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz"
+        vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz",
+        vcfindex="data/{dataset}/variants_{n_individuals}individuals.vcf.gz.tbi"
     shell:
         "head -n {wildcards.n_individuals} {input.sample_names_random} > {output.subsamples} && "
-        "bcftools view -O z -S {output.subsamples} {input.vcf} > {output.vcf}"
+        "bcftools view -O z -S {output.subsamples} {input.vcf} > {output.vcf} && tabix -f -p vcf {output.vcf}"
+
+
+"""
+rule make_multiallelic_vcf_for_pangenie:
+    input:
+        vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz"
+    output:
+        "data/{dataset}/variants_{n_individuals}individuals_multiallelic.vcf"
+    shell:
+        "bcftools norm -m +any {input.vcf} > {output}"
+"""
 
 
 rule uncompress_subsampled_vcf:

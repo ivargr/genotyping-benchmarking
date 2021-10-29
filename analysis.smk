@@ -4,6 +4,9 @@ include:
 include:
     "genotype_methods.smk"
 
+include:
+    "pangenie.smk"
+
 def get_truth_file_vcf_url(wildcards):
     return config["truth_datasets"][wildcards.truth_dataset]["vcf_url"]
 

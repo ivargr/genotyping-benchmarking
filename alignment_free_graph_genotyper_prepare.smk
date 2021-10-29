@@ -231,12 +231,12 @@ rule make_combination_model:
 rule find_tricky_variants:
     input:
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        genotype_model= "data/{dataset}/genotype_model.npz",
+        model= "data/{dataset}/combination_model.npz",
         reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
     output:
         tricky_variants="data/{dataset}/tricky_variants.npy",
         tricky_variants_nonunique_kmers="data/{dataset}/tricky_variants_nonunique_kmers.npy"
     shell:
-        "alignment_free_graph_genotyper find_tricky_variants -v {input.variant_to_nodes} -m {input.genotype_model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 3 && "
-        "alignment_free_graph_genotyper find_tricky_variants -v {input.variant_to_nodes} -m {input.genotype_model} -r {input.reverse_variant_kmers} -o {output.tricky_variants_nonunique_kmers} -u True"
+        "alignment_free_graph_genotyper find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 3 && "
+        "alignment_free_graph_genotyper find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants_nonunique_kmers} -u True"
 

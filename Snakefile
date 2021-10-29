@@ -17,7 +17,8 @@ ruleorder:
 
 rule all:
     input:
-        WEB_PATH + "figure1.html"
+        #"data/dataset2/pangenie_hg002_simulated_reads_15x.15individuals.vcf"
+        WEB_PATH + "table2.html"
         #WEB_PATH + "table4.html",
         #WEB_PATH + "table3.html",
         #WEB_PATH + "figure4.html",

@@ -41,14 +41,14 @@ rule run_pangenie:
     input:
         ref = "data/{dataset}/ref.fa",
         reads="data/{dataset}/{reads}.fa",
-        variants = "data/{dataset}/variants_{n_individuals}individuals.vcf",
+        variants = "data/{dataset}/variants_{n_individuals}individuals_multiallelic.vcf",
     output:
         genotypes="data/{dataset}/pangenie_{reads}.{n_individuals,\d+}individuals.vcf",
         genotypes_gz="data/{dataset}/pangenie_{reads}.{n_individuals,\d+}individuals.vcf.gz"
     threads:
         config["n_threads"]
     resources:
-        mem_gb=100
+        mem_gb=450
     benchmark:
         #"data/{dataset}/benchmarks/pangenie_{reads}.{n_individuals}individuals.tsv"
         "data/{dataset}/benchmarks/pangenieN{n_individuals}_{reads}.tsv"
@@ -163,7 +163,7 @@ rule run_bayestyper:
         decoy="data/{dataset}/decoy.fasta",
         bloomdata="data/{dataset}/{reads}.kmers_bayestyper.bloomData",
         bloommeta="data/{dataset}/{reads}.kmers_bayestyper.bloomMeta",
-        variants="data/{dataset}/variants_no_genotypes_multiallelic.vcf",
+        variants="data/{dataset}/variants_no_genotypes.vcf",
         samples="data/{dataset}/samples_{reads}.tsv",
     output:
         #units=dynamic("data/{dataset}/tmp_bayestyper_data_{reads}/bayestyper_unit_{unit_id}/variant_clusters.bin")
