@@ -143,6 +143,14 @@ rule sample_kmers_from_linear_reference:
         "graph_kmer_index make_from_flat -o data/{wildcards.dataset}/linear_kmer_index -f {output.flat} -m 20000033"
 
 
+rule make_helper_model:
+    input:
+        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}individuals.npy"
+    output:
+        helper_model="data/{dataset}/helper_model_{n_individuals}individuals.npy",
+        helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy"
+    shell:
+        "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}individuals -g {input.genotype_matrix} -w 1000"
 
 rule make_variant_kmer_index:
     input:

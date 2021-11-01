@@ -17,8 +17,11 @@ ruleorder:
 
 rule all:
     input:
+        "data/simulated_dataset1/variants.vcf.gz",
+        "data/simulated_dataset1/usN100_seed1_simulated_reads_10x.vcf.gz",
+        "data/simulated_dataset1/happy-seed1-usN100_seed1_simulated_reads_10x.summary.csv"
         #"data/dataset2/pangenie_hg002_simulated_reads_15x.15individuals.vcf"
-        WEB_PATH + "table2.html"
+        #WEB_PATH + "table2.html"
         #WEB_PATH + "table4.html",
         #WEB_PATH + "table3.html",
         #WEB_PATH + "figure4.html",

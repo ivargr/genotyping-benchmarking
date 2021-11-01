@@ -16,6 +16,10 @@ def get_truth_file_regions_url(wildcards):
 def get_dataset_regions_comma_separated(wildcards):
     return config["analysis_regions"][wildcards.dataset]["region"].replace(" ", ",")
 
+def get_genome_size_simulated_data_set(wildcards):
+    return config["analysis_regions"]["simulated_dataset" + wildcards.number]["genome_size"]
+
+
 rule download_truth_file:
     output:
         vcf="data/{dataset}/original_{truth_dataset}.vcf.gz",
@@ -32,14 +36,34 @@ rule download_truth_file:
         "wget -O {output.regions_file} {params.regions_url} && sed -i 's/chr//g' {output.regions_file}"
 
 
+# whole region is in regions file
+rule create_simulated_regions_file:
+    output:
+        regions_file="data/simulated_dataset{number}/truth_{truth_dataset}_regions.bed"
+    params:
+        genome_size=get_genome_size_simulated_data_set
+    shell:
+        "echo '1\t1\t{params.genome_size}' > {output}"
+
+
+rule create_simulated_truth_file:
+    input:
+        population_vcf="data/simulated_dataset{number}/variants.vcf"
+    output:
+        vcf="data/simulated_dataset{number}/truth_seed{seed,\d+}.vcf",
+        vcf_gz="data/simulated_dataset{number}/truth_seed{seed,\d+}.vcf.gz",
+    shell:
+        "graph_read_simulator simulate_individual_vcf -s {wildcards.seed} -v {input} -o {output.vcf} && bgzip -f -c {output.vcf} > {output.vcf_gz} && tabix -f -p vcf {output.vcf_gz}"
+
+
 rule create_truth_file:
     input:
-        vcf="data/{dataset}/original_{truth_dataset}.vcf.gz",
-        regions_file="data/{dataset}/original_{truth_dataset}_regions.bed"
+        vcf="data/dataset{number}/original_{truth_dataset}.vcf.gz",
+        regions_file="data/dataset{number}/original_{truth_dataset}_regions.bed"
 
     output:
-        vcf="data/{dataset}/truth_{truth_dataset}.vcf.gz",
-        regions_file="data/{dataset}/truth_{truth_dataset}_regions.bed"
+        vcf="data/dataset{number,\d+}/truth_{truth_dataset}.vcf.gz",
+        regions_file="data/dataset{number,\d+}/truth_{truth_dataset}_regions.bed"
 
     params:
         regions = get_dataset_regions_comma_separated

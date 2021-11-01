@@ -8,6 +8,13 @@ def get_dataset_regions(wildcards):
 def get_dataset_regions_comma_separated(wildcards):
     return config["analysis_regions"][wildcards.dataset]["region"].replace(" ", ",")
 
+def get_n_individuals(wildcards):
+    return config["analysis_regions"]["simulated_dataset" + wildcards.number]["n_individuals"]
+
+def get_n_variants(wildcards):
+    return config["analysis_regions"]["simulated_dataset" + wildcards.number]["n_variants"]
+
+
 rule download_vcf:
     output:
         vcf="data/variants.vcf.gz",
@@ -16,16 +23,30 @@ rule download_vcf:
     shell:
         "wget -O {output.vcf} {config[thousand_genomes_vcf]} && wget -O {output.index} {config[thousand_genomes_vcf]}.tbi "
 
+
+rule prepare_simulated_dataset_vcf:
+    input:
+        ref="data/simulated_dataset{number,\d+}/ref.fa"
+    output:
+        vcf="data/simulated_dataset{number,\d+}/variants.vcf",
+        vcf_gz="data/simulated_dataset{number,\d+}/variants.vcf.gz"
+    params:
+        n_individuals=get_n_individuals,
+        n_variants=get_n_variants
+    shell:
+        "graph_read_simulator simulate_population_vcf -r {input.ref} -n {params.n_variants} -i {params.n_individuals} -o {output.vcf} && bgzip -c -f {output.vcf} > {output.vcf_gz} && tabix -f -p vcf {output.vcf_gz} "
+
+
 rule prepare_dataset_vcf:
     input:
         vcf="data/variants.vcf.gz"
     output:
-        "data/{dataset}/variants.vcf.gz"
+        "data/dataset{number,\d+}/variants.vcf.gz"
     params:
         regions=get_dataset_regions_comma_separated
     shell:
         #"bcftools view -O z --regions {config[analysis_regions][{dataset}]} variants.vcf.gz > {output} && tabix -p vcf {output} "
-        "bcftools view -O z --regions {params.regions} {input.vcf} > {output} && tabix -p vcf {output} "
+        "bcftools view -O z --regions {params.regions} {input.vcf} > {output} && tabix -f -p vcf {output} "
 
 rule prepare_dataset_reference:
     input:
