@@ -206,8 +206,8 @@ rule make_kmer_count_model:
     resources:
         mem_gb=120
     shell:
-        "alignment_free_graph_genotyper model_using_kmer_index -i {input.kmer_index} -g {input.variant_to_nodes} -r {input.reverse_variant_kmers} -m {params.n_nodes} -o {output.haplotype_model} -k {config[k]} -t {config[n_threads_data_quarter]} &&"
-        "alignment_free_graph_genotyper make_genotype_model -v {input.variant_to_nodes} -n {output.haplotype_model} -o {output.genotype_model}"
+        "kage model -i {input.kmer_index} -g {input.variant_to_nodes} -r {input.reverse_variant_kmers} -m {params.n_nodes} -o {output.haplotype_model} -k {config[k]} -t {config[n_threads_data_quarter]} &&"
+        "kage make_genotype_model -v {input.variant_to_nodes} -n {output.haplotype_model} -o {output.genotype_model}"
 
 rule make_combination_model:
     input:
@@ -223,7 +223,7 @@ rule make_combination_model:
     resources:
         mem_gb=120
     shell:
-        "alignment_free_graph_genotyper model_using_kmer_index -i {input.kmer_index} -g {input.variant_to_nodes} -r "
+        "kage model -i {input.kmer_index} -g {input.variant_to_nodes} -r "
         "{input.reverse_variant_kmers} -m {params.n_nodes} -o {output.model} "
         "-k {config[k]} -t {config[n_threads_data_quarter]} -V v3 "
 
@@ -237,6 +237,6 @@ rule find_tricky_variants:
         tricky_variants="data/{dataset}/tricky_variants.npy",
         tricky_variants_nonunique_kmers="data/{dataset}/tricky_variants_nonunique_kmers.npy"
     shell:
-        "alignment_free_graph_genotyper find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 3 && "
-        "alignment_free_graph_genotyper find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants_nonunique_kmers} -u True"
+        "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 3 && "
+        "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants_nonunique_kmers} -u True"
 

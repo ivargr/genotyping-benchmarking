@@ -16,7 +16,7 @@ rule map:
     benchmark:
         "data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
     shell:
-        "/usr/bin/time -v alignment_free_graph_genotyper count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
+        "/usr/bin/time -v kage count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
 
 def get_sample_name_from_experiment(wildcards):
     return wildcards.experiment.split("_")[0]
@@ -45,7 +45,7 @@ rule genotype:
         sample_name=get_sample_name_from_experiment,
         read_coverage=get_read_coverage_from_experiment
     shell:
-        "alignment_free_graph_genotyper genotype -c {input.node_counts} "
+        "kage genotype -c {input.node_counts} "
         "-g {input.variant_to_nodes} " 
         "-v {input.variants} " 
         "-A {input.model} " 
@@ -85,7 +85,7 @@ rule genotype_without_using_modelled_counts:
     threads:
         4
     shell:
-        "alignment_free_graph_genotyper genotype -c {input.node_counts} "
+        "kage genotype -c {input.node_counts} "
         "-g {input.variant_to_nodes} "
         "-v {input.variants} "
         "-G {input.genotype_frequencies} "

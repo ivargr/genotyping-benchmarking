@@ -1,7 +1,7 @@
 import logging
 logging.basicConfig(level=logging.INFO)
 import sys
-from alignment_free_graph_genotyper.variants import VcfVariants
+from obgraph.variants import VcfVariants
 
 
 def read_genotypes_into_dict(file_name, dont_read_genotypes=False):
