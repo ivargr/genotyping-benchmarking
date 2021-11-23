@@ -1,4 +1,7 @@
 import logging
+logging.basicConfig(level=logging.INFO)
+logging.info("Making tables")
+
 import sys
 
 
@@ -14,6 +17,8 @@ method_jobs  = {
     "graphtyper": ["bwamem", "graphtyper"],
     "malva": ["malva_kmc", "malva"],
     "us": ["mapI1000", "usN2058"],
+    "usN1000": ["mapI1000", "usN1000"],
+    "kage": ["mapI1000", "usN2058"],
     "pangenie": ["pangenieN32"]
 }
 
@@ -39,15 +44,19 @@ def get_memory(job_name, experiment, dataset):
     return memory
 
 def get_accuracy(method_name):
+    #file_name = "data/" + dataset + "/happy-" + truth_dataset + "-" + method_name + "_" + experiment + "-only-callable.summary.csv"
     file_name = "data/" + dataset + "/happy-" + truth_dataset + "-" + method_name + "_" + experiment + ".summary.csv"
+    logging.info("Using file name %s" % file_name)
     lines = list(open(file_name).readlines())
     indels = lines[1].split(",")
     indels_recall = indels[10]
     indels_precision = indels[11]
+    indels_f1 = indels[13]
     snps = lines[3].split(",")
     snps_recall = snps[10]
     snps_precision = snps[11]
-    return [indels_recall, indels_precision, snps_recall, snps_precision]
+    snps_f1 = snps[13]
+    return [indels_recall, indels_precision, indels_f1, snps_recall, snps_precision, snps_f1]
 
 for method in methods:
     run_times[method] = round(sum([get_run_time(job_name, experiment, dataset) for job_name in method_jobs[method]]), 1)
@@ -56,7 +65,7 @@ for method in methods:
     logging.info("Method %s has total run time %d sec and max memory %d bytes" % (method, run_times[method], memory_usage[method]))
 
 
-table_headers = ["", "Indels recall", "Indels precision", "SNPs recall", "SNPs precision", "Runtime", "Memory usage"]
+table_headers = ["", "Indels recall", "Indels precision", "Indels F1", "SNPs recall", "SNPs precision", "SNPs F1", "Runtime", "Memory usage"]
 table = []
 
 for method in methods:

@@ -6,7 +6,7 @@ def get_dataset_regions(wildcards):
     return config["analysis_regions"][wildcards.dataset]["region"]
 
 def get_dataset_regions_comma_separated(wildcards):
-    return config["analysis_regions"][wildcards.dataset]["region"].replace(" ", ",")
+    return config["analysis_regions"]["dataset" + wildcards.number]["region"].replace(" ", ",")
 
 def get_n_individuals(wildcards):
     return config["analysis_regions"]["simulated_dataset" + wildcards.number]["n_individuals"]
@@ -26,15 +26,20 @@ rule download_vcf:
 
 rule prepare_simulated_dataset_vcf:
     input:
-        ref="data/simulated_dataset{number,\d+}/ref.fa"
+        ref="data/simulated_dataset{number,\d+}/ref.fa",
+        ref_index="data/simulated_dataset{number,\d+}/ref.fa.fai"
     output:
         vcf="data/simulated_dataset{number,\d+}/variants.vcf",
-        vcf_gz="data/simulated_dataset{number,\d+}/variants.vcf.gz"
+        vcf_gz="data/simulated_dataset{number,\d+}/variants.vcf.gz",
+        individual_vcf="data/simulated_dataset{number}/truth_seed1.vcf",
+        individual_vcf_gz="data/simulated_dataset{number}/truth_seed1.vcf.gz",
     params:
         n_individuals=get_n_individuals,
         n_variants=get_n_variants
     shell:
-        "graph_read_simulator simulate_population_vcf -r {input.ref} -n {params.n_variants} -i {params.n_individuals} -o {output.vcf} && bgzip -c -f {output.vcf} > {output.vcf_gz} && tabix -f -p vcf {output.vcf_gz} "
+        "graph_read_simulator simulate_population_vcf -r {input.ref} -n {params.n_variants} -i {params.n_individuals} -o {output.vcf} -I {output.individual_vcf} && "
+        "bgzip -c -f {output.vcf} > {output.vcf_gz} && tabix -f -p vcf {output.vcf_gz} && "
+        "bgzip -c -f {output.individual_vcf} > {output.individual_vcf_gz} && tabix -f -p vcf {output.individual_vcf_gz} "
 
 
 rule prepare_dataset_vcf:
@@ -53,12 +58,12 @@ rule prepare_dataset_reference:
         "data/hg38_chr1-Y.fa"
     output:
         full_reference="data/{dataset}/ref.fa",
-        #index="data/{dataset}/ref.fa.fai"
+        index="data/{dataset}/ref.fa.fai"
     params:
         regions=get_dataset_regions
     shell:
-        "samtools faidx {input} {params.regions} | python3 scripts/format_fasta_header.py > {output.full_reference} "
-        #"samtools faidx {output.full_reference}"
+        "samtools faidx {input} {params.regions} | python3 scripts/format_fasta_header.py > {output.full_reference}  && " 
+        "samtools faidx {output.full_reference}"
 
 rule make_flat_reference:
     input: "data/{d}/ref.fa"

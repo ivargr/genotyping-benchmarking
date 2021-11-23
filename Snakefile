@@ -17,10 +17,39 @@ ruleorder:
 
 rule all:
     input:
-        "data/simulated_dataset1/variants.vcf.gz",
-        "data/simulated_dataset1/usN100_seed1_simulated_reads_10x.vcf.gz",
-        "data/simulated_dataset1/happy-seed1-usN100_seed1_simulated_reads_10x.summary.csv"
-        #"data/dataset2/pangenie_hg002_simulated_reads_15x.15individuals.vcf"
+        #WEB_PATH + "table10.html",
+        "data/dataset1/happy-hg002-usN2548_hg002_simulated_reads_15x.summary.csv",
+        #"data/dataset1/debugging-usN2058-hg002-hg002_simulated_reads_15x.txt",
+        #"data/simulated_dataset2/debugging-usN1000-seed1-seed1_simulated_reads_15x.txt",
+        #WEB_PATH + "table2.html"
+        #"data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv",
+        #"data/dataset1/debugging-usN2058-hg002-hg002_simulated_reads_15x.txt",
+        #"table_simulated_data.html",
+        #"data/simulated_dataset1/happy-seed1-usN800_seed1_simulated_reads_15x.summary.csv",
+        #"data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv"
+        #"data/dataset1/truth_hg002.only_callable.vcf.gz"
+        #WEB_PATH + "figure2.html",
+        #WEB_PATH + "table2.html"
+        #"data/dataset3/debugging-usN2058-hg002-hg002_simulated_reads_15x.txt"
+        #WEB_PATH + "table9.html"
+        #"data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv"
+        #"data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv"
+        #"data/dataset2/debugging-usN15-seed1-seed1_simulated_reads_15x.txt"
+        #"data/dataset1/debugging-usN2058-hg002-hg002_simulated_reads_15x.txt"
+        #"data/dataset2/debugging-usN2058-hg002-hg002_real_reads_15x.txt"
+        #WEB_PATH + "table2.html"
+        #"data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv"
+        #"data/simulated_dataset1/happy-seed1-usN800_seed1_simulated_reads_15x.summary.csv",
+        #"data/simulated_dataset2/happy-seed1-usN50_seed1_simulated_reads_15x.summary.csv",
+        #"data/simulated_dataset2/happy-seed1-pangenieN15_seed1_simulated_reads_15x.summary.csv",
+        #"data/simulated_dataset1/happy-seed1-usN500_seed1_simulated_reads_15x.summary.csv",
+        #"table_simulated_data.html",
+        #"table_simulated_dataset1-seed1_simulated_reads_15x-seed1.html"
+        #"data/simulated_dataset1/variants.vcf.gz",
+        #"data/simulated_dataset1/usN100_seed1_simulated_reads_10x.vcf.gz",
+        #"data/simulated_dataset1/happy-seed1-usN500_seed1_simulated_reads_15x.summary.csv",
+        #"data/simulated_dataset1/happy-seed1-pangenie_seed1_simulated_reads_15x.summary.csv"
+        ##"data/dataset2/pangenie_hg002_simulated_reads_15x.15individuals.vcf"
         #WEB_PATH + "table2.html"
         #WEB_PATH + "table4.html",
         #WEB_PATH + "table3.html",

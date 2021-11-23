@@ -63,7 +63,7 @@ rule make_genotype_matrix:
         vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz",
         vcf_no_genotypes="data/{dataset}/variants_no_genotypes.vcf"
     output:
-        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}individuals.npy",
+        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals,\d+}individuals.npy",
     threads: config["n_threads_data_quarter"]
     benchmark: "data/{dataset}/benchmarks/make_genotype_matrix_{n_individuals}individuals.tsv"
     resources:
@@ -71,8 +71,22 @@ rule make_genotype_matrix:
     shell:
         #"n_individuals=$(zcat {input.vcf} | head -n 1000 | grep -i '#chrom' | python3 -c 'import sys; print(len(list(sys.stdin)[0].split())-9)') || true && "
         "n_variants=$(grep -v '#' {input.vcf_no_genotypes} | wc -l) || true && "
-        "obgraph make_genotype_matrix -t {config[n_threads_data_quarter]} -g {input.graph} -v {input.vcf} -o {output.genotype_matrix} -n {wildcards.n_individuals} -m $n_variants"
+        "obgraph make_genotype_matrix -g {input.graph} -v {input.vcf} -o {output.genotype_matrix} -n {wildcards.n_individuals} -m $n_variants -t {config[n_threads_data]}"
 
+
+"""
+rule convert_genotype_matrix:
+    input:
+        genotype_matrix = "data/{dataset}/genotype_matrix_{n_individuals}individuals.npy",
+    output:
+        genotype_matrix = "data/{dataset}/genotype_matrix_converted_{n_individuals,\d+}individuals.npy",
+    resources:
+        mem_gb=200
+    threads:
+        config["n_threads_data"]
+    shell:
+        "obgraph convert_genotype_matrix -g {input.genotype_matrix} -o {output.genotype_matrix} -t 8"
+"""
 
 rule make_transition_probabilities:
     input:
@@ -145,12 +159,18 @@ rule sample_kmers_from_linear_reference:
 
 rule make_helper_model:
     input:
-        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}individuals.npy"
+        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}individuals.npy",
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        node_count_model="data/{dataset}/combination_model.npz",
     output:
         helper_model="data/{dataset}/helper_model_{n_individuals}individuals.npy",
         helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy"
+    threads: config["n_threads_data"]
+    resources: mem_gb=300
     shell:
-        "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}individuals -g {input.genotype_matrix} -w 1000"
+        "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}individuals "
+        "-g {input.genotype_matrix} -w 500 -v {input.variant_to_nodes} -n {input.node_count_model} -t {config[n_threads_data_quarter]} "
+        " "
 
 rule make_variant_kmer_index:
     input:
@@ -167,7 +187,7 @@ rule make_variant_kmer_index:
     resources: mem_gb=100
     threads: config["n_threads_data"]
     shell:
-        "graph_kmer_index make_unique_variant_kmers -g {input.graph} -V {input.variant_to_nodes} -k {config[k]} -o data/{wildcards.dataset}/variant_kmers -v {input.vcf} -t {config[n_threads_data]} -c 300000 --max-variant-nodes 5 -i {input.linear_kmer_index} && "
+        "graph_kmer_index make_unique_variant_kmers -g {input.graph} -V {input.variant_to_nodes} -k {config[k]} -o data/{wildcards.dataset}/variant_kmers -v {input.vcf} -t {config[n_threads_data]} -c 10000 --max-variant-nodes 5 -i {input.linear_kmer_index} && "
         "graph_kmer_index make_from_flat -o {output.index} -f data/{wildcards.dataset}/variant_kmers.npz -m 200000033 && "
         "graph_kmer_index make_reverse -f data/{wildcards.dataset}/variant_kmers -o {output.reverse_index}"
 
@@ -214,7 +234,7 @@ rule make_kmer_count_model:
     resources:
         mem_gb=120
     shell:
-        "kage model -i {input.kmer_index} -g {input.variant_to_nodes} -r {input.reverse_variant_kmers} -m {params.n_nodes} -o {output.haplotype_model} -k {config[k]} -t {config[n_threads_data_quarter]} &&"
+        "kage model -i {input.kmer_index} -g {input.variant_to_nodes} -r {input.reverse_variant_kmers} -m {params.n_nodes} -o {output.haplotype_model} -k {config[k]} -t {config[n_threads_data_quarter]} -V '' &&"
         "kage make_genotype_model -v {input.variant_to_nodes} -n {output.haplotype_model} -o {output.genotype_model}"
 
 rule make_combination_model:
@@ -245,6 +265,6 @@ rule find_tricky_variants:
         tricky_variants="data/{dataset}/tricky_variants.npy",
         tricky_variants_nonunique_kmers="data/{dataset}/tricky_variants_nonunique_kmers.npy"
     shell:
-        "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 3 && "
+        "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 1000 && "
         "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants_nonunique_kmers} -u True"
 
