@@ -192,6 +192,15 @@ rule make_variant_kmer_index:
         "graph_kmer_index make_reverse -f data/{wildcards.dataset}/variant_kmers -o {output.reverse_index}"
 
 
+rule make_numpy_variants:
+    input:
+        "data/{dataset}/variants_no_genotypes.vcf"
+    output:
+        "data/{dataset}/numpy_variants.npz"
+    shell:
+        "obgraph make_numpy_variants -v {input} -o {output}"
+
+
 rule sample_kmers_for_kmer_model:
     input:
         graph="data/{dataset}/obgraph.npz",

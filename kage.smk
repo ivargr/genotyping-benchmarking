@@ -11,15 +11,16 @@ rule map:
         reads="data/{dataset}/{experiment}.fa",
         kmer_index_only_variants="data/{dataset}/kmer_index_only_variants.npz"
     output:
-        node_counts="data/{dataset}/{experiment}.I{max_index_frequency}.node_counts.npy"
+        node_counts="data/{dataset}/{experiment}.I{max_index_frequency}.node_counts.npy",
+        benchmark_report="data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
     params:
         n_nodes=get_dataset_n_nodes
     threads: config["n_threads"]
-    benchmark:
-        "data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
+    #benchmark:
+    #    "data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
     shell:
         #"/usr/bin/time -v kage count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
-        "/usr/bin/time -v kmer_mapper map -i {input.kmer_index_only_variants} -o {output.node_counts} -t {config[n_threads]} -c 500000 -f {input.reads} -I {wildcards.max_index_frequency}"
+        "/usr/bin/time -v kmer_mapper map -i {input.kmer_index_only_variants} -o {output.node_counts} -t {config[n_threads]} -c 500000 -f {input.reads} -I {wildcards.max_index_frequency} 2> {output.benchmark_report}"
 
 
 def get_sample_name_from_experiment(wildcards):
@@ -33,7 +34,8 @@ rule genotype:
     input:
         node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        variants="data/{dataset}/variants_no_genotypes.vcf",
+        #variants="data/{dataset}/variants_no_genotypes.vcf",
+        variants="data/{dataset}/numpy_variants.npz",
         model="data/{dataset}/combination_model.npz",
         #genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals}individuals.npz",
         #most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}individuals.npz",
@@ -44,16 +46,17 @@ rule genotype:
     output:
         genotypes="data/{dataset}/usN{n_individuals,\d+}_{experiment,[a-z0-9_]+}.vcf.gz",
         probs="data/{dataset}/usN{n_individuals,\d+}_{experiment,[a-z0-9_]+}.vcf.gz.tmp.probs.npy",
-        count_probs="data/{dataset}/usN{n_individuals,\d+}_{experiment,[a-z0-9_]+}.vcf.gz.tmp.count_probs.npy"
+        count_probs="data/{dataset}/usN{n_individuals,\d+}_{experiment,[a-z0-9_]+}.vcf.gz.tmp.count_probs.npy",
+        benchmark_report="data/{dataset}/benchmarks/usN{n_individuals}_{experiment}.tsv"
     threads:
-        4
-    benchmark:
-        "data/{dataset}/benchmarks/usN{n_individuals}_{experiment}.tsv"
+        config["n_threads"]
+    #benchmark:
+    #    "data/{dataset}/benchmarks/usN{n_individuals}_{experiment}.tsv"
     params:
         sample_name=get_sample_name_from_experiment,
         read_coverage=get_read_coverage_from_experiment
     shell:
-        "kage genotype -c {input.node_counts} "
+        "/usr/bin/time -v kage genotype -c {input.node_counts} "
         "-g {input.variant_to_nodes} " 
         "-v {input.variants} " 
         "-A {input.model} " 
@@ -63,13 +66,13 @@ rule genotype:
         "-F {input.helper_model_combo_matrix} "
         "-o {output.genotypes}.tmp " 
         "-C CombinationModelGenotyper " 
-        "-t 1 -z 2000000000000000 "
+        "-t {config[n_threads]} "
         "-q 80 " 
         #"-p {input.transition_probs} " 
         #"--average-coverage {params.read_coverage} "
         "--average-coverage 15.0 "
         #"-x {input.tricky_variants} "
-        "--sample-name-output {params.sample_name} "
+        "--sample-name-output {params.sample_name} 2> {output.benchmark_report} "
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
 
 
@@ -129,7 +132,7 @@ rule kage_naive:
     input:
         node_counts="data/{dataset}/{experiment}.I1.node_counts.npy",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        variants="data/{dataset}/variants_no_genotypes.vcf",
+        variants="data/{dataset}/numpy_variants.vcf",
         genotype_frequencies="data/{dataset}/genotype_frequencies_naive.npz",
         tricky_variants="data/{dataset}/tricky_variants_nonunique_kmers.npy",
     output:
@@ -143,7 +146,7 @@ rule kage_naive:
         "-G {input.genotype_frequencies} "
         "-o {output.genotypes}.tmp "
         "-C NumpyGenotyper "
-        "-t 1 -z 500000 -a 1.0 -u True -z 60000000000 "
+        "-t 1  -a 1.0 -u True -z 60000000000 "
         "-x {input.tricky_variants}"
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
 

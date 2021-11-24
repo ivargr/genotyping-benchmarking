@@ -1,4 +1,5 @@
 import logging
+import math
 logging.basicConfig(level=logging.INFO)
 logging.info("Making tables")
 
@@ -28,19 +29,48 @@ run_times = {}
 memory_usage = {}
 accuracy = {}
 
+def is_unix_time_report(file_name):
+    with open(file_name) as f:
+        content = f.read()
+        if "Command being timed:" in content:
+            return True
+
+    return False
+
+
 def get_run_time(job_name, experiment, dataset):
     file_name = "data/" + dataset + "/benchmarks/" + job_name + "_" + experiment + ".tsv"
-    lines = list(open(file_name).readlines())
-    line = lines[1].split()
-    run_time = float(line[0]) / (60*60)
+    if is_unix_time_report(file_name):
+        lines = open(file_name).readlines()
+        line = [line for line in lines if "Elapsed (wall clock) time (h:mm:ss or m:ss): " in line][0]
+        time_string = line.replace("Elapsed (wall clock) time (h:mm:ss or m:ss): ", "").strip().split(":")
+        if len(time_string) == 2:
+            logging.info(time_string)
+            hours = 0
+            minutes = int(time_string[0])
+            seconds = int(time_string[1].split(".")[0])
+        elif len(time_string) == 3:
+            hours = int(time_string[0])
+            minutes = int(time_string[1])
+            seconds = int(time_string[1])
+        logging.info("%d hours and %d minutes" % (hours, minutes))
+        return hours + minutes/60 + seconds / 3600
+    else:
+        lines = list(open(file_name).readlines())
+        line = lines[1].split()
+        run_time = float(line[0]) / (60*60)
     return run_time
 
 
 def get_memory(job_name, experiment, dataset):
     file_name = "data/" + dataset + "/benchmarks/" + job_name + "_" + experiment + ".tsv"
-    lines = list(open(file_name).readlines())
-    line = lines[1].split()
-    memory = round(float(line[2])/1000, 2)  # GBs
+    if is_unix_time_report(file_name):
+        line = [line for line in list(open(file_name).readlines()) if line.startswith("\tMaximum resident set size (kbytes): ")][0]
+        memory = float(line.replace("Maximum resident set size (kbytes): ", "").strip()) / 1000000  # gb
+    else:
+        lines = list(open(file_name).readlines())
+        line = lines[1].split()
+        memory = round(float(line[2])/1000, 2)  # GBs
     return memory
 
 def get_accuracy(method_name):
@@ -68,9 +98,18 @@ for method in methods:
 table_headers = ["", "Indels recall", "Indels precision", "Indels F1", "SNPs recall", "SNPs precision", "SNPs F1", "Runtime", "Memory usage"]
 table = []
 
+def format_run_time(hours):
+    if hours < 1:
+        minutes = math.floor(hours * 60)
+        seconds = math.floor(hours * 3600) - minutes*60
+        return "%d min" % minutes
+    else:
+        return "%.1f hours" % hours
+
+
 for method in methods:
     table.append(
-        [method.capitalize()] + accuracy[method] + [str(run_times[method]) + " h", str(memory_usage[method]) + " GB"]
+        [method.capitalize()] + accuracy[method] + [format_run_time(run_times[method]), str(memory_usage[method]) + " GB"]
     )
 
 from tabulate import tabulate
