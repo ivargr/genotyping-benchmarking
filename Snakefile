@@ -17,7 +17,7 @@ ruleorder:
 
 rule all:
     input:
-        WEB_PATH + "figure2.html",
+        WEB_PATH + "table2.html",
         #"data/dataset2/usN2058_hg002_real_reads_15x.vcf.gz"
         #WEB_PATH + "table10.html",
         #"data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv",

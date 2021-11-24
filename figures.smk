@@ -54,7 +54,7 @@ rule figure3:
 
 METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
 #METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
-METHODS = ["us", "pangenie"]
+METHODS = ["us", "pangenie", "graphtyper", "malva"]
 METHODS_JOINED = ",".join(METHODS)
 
 
