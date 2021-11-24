@@ -87,7 +87,9 @@ def get_accuracy(method_name, only_callable_variants=""):
     snps_recall = snps[10]
     snps_precision = snps[11]
     snps_f1 = snps[13]
-    return [indels_recall, indels_precision, indels_f1, snps_recall, snps_precision, snps_f1]
+    results = [indels_recall, indels_precision, indels_f1, snps_recall, snps_precision, snps_f1]
+    results = ["%.3f" % float(r) for r in results]
+    return results
 
 
 
