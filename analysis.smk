@@ -78,6 +78,12 @@ rule create_truth_file:
         "python3 scripts/extract_regions_from_bed.py {input.regions_file} {params.regions} > {output.regions_file}"
 
 
+rule create_truth_file_without_long_indels:
+    input: "data/{dataset}/truth_{truth_dataset}.vcf.gz"
+    output: "data/{dataset}/truthShortIndels_{truth_dataset}.vcf.gz"
+    shell: "zcat {input} | python3 scripts/filter_vcf_on_indel_length.py 20 | bgzip -c > {output}"
+
+
 rule intersect_truth_file_with_callable_variants:
     input:
         truth="data/{dataset}/truth_{truth_dataset}.vcf.gz",
@@ -93,19 +99,24 @@ rule run_happy:
         genotypes="data/{dataset}/{run}.vcf.gz",
         truth_vcf="data/{dataset}/truth_{truth_dataset}.vcf.gz",
         truth_vcf_only_callable="data/{dataset}/truthOnlyCallable_{truth_dataset}.vcf.gz",
+        truth_short_indels="data/{dataset}/truthShortIndels_{truth_dataset}.vcf.gz",
         truth_regions_file="data/{dataset}/truth_{truth_dataset}_regions.bed",
         ref="data/{dataset}/ref.fa"
 
     output:
-        output_file="data/{dataset}/happy-{truth_dataset}-{run}.summary.csv",
-        output_file_only_callable="data/{dataset}/happy-{truth_dataset}-{run}-only-callable.summary.csv"
+        output_file="data/{dataset}/happy-{truth_dataset}-{run}.extended.csv",
+        output_file_only_callable="data/{dataset}/happy-{truth_dataset}-{run}-only-callable.extended.csv",
+        output_file_short_indels="data/{dataset}/happy-{truth_dataset}-{run}-short-indels.extended.csv",
 
     shell:
         """zcat {input.genotypes} | awk '{{ $6 = ($6 == "inf" ? 0 : $6) }} 1' OFS="\\t" | bgzip -c > {input.genotypes}.inf-replaced.vcf.gz && """
         "tabix -f -p vcf {input.genotypes}.inf-replaced.vcf.gz && "
-        "/root/hap.py-install/bin/hap.py {input.truth_vcf} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run} -f {input.truth_regions_file} --no-decompose --engine=vcfeval && "
+        # skip long indels
+        "hap.py {input.truth_short_indels} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run}-short-indels -f {input.truth_regions_file} --no-decompose --engine=vcfeval && "
+        # normal
+        "hap.py {input.truth_vcf} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run} -f {input.truth_regions_file} --no-decompose --engine=vcfeval && "
         # check against only truth variants that are in input variant set:
-        "/root/hap.py-install/bin/hap.py {input.truth_vcf_only_callable} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run}-only-callable -f {input.truth_regions_file} --no-decompose --engine=vcfeval"
+        "hap.py {input.truth_vcf_only_callable} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run}-only-callable -f {input.truth_regions_file} --no-decompose --engine=vcfeval "
         #"hap.py {input.truth_vcf} {input.genotypes}.inf-replaced.vcf.gz -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run} -f {input.truth_regions_file}"
 
 """
@@ -159,7 +170,8 @@ rule debug_genotyping:
         helper_variants="data/{dataset}/helper_model_{n_individuals}individuals.npy",
         combination_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy",
         genotype_probs="data/{dataset}/{method}N{n_individuals}_{experiment}.vcf.gz.tmp.probs.npy",
-        genotype_count_probs="data/{dataset}/{method}N{n_individuals}_{experiment}.vcf.gz.tmp.count_probs.npy"
+        genotype_count_probs="data/{dataset}/{method}N{n_individuals}_{experiment}.vcf.gz.tmp.count_probs.npy",
+        pangenie="data/{dataset}/pangenieN32_{experiment}.vcf.gz"
 
     output:
         "data/{dataset}/debugging-{method}N{n_individuals,\d+}-{truth_id}-{experiment}.txt"
@@ -178,4 +190,5 @@ rule debug_genotyping:
         "-F {input.combination_matrix} "
         "-p {input.genotype_probs} "
         "-c {input.genotype_count_probs} "
+        "-a {input.pangenie} "
         "-t {input.truth_regions} > {output}"

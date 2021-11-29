@@ -54,8 +54,10 @@ def get_run_time(job_name, experiment, dataset):
             hours = int(time_string[0])
             minutes = int(time_string[1])
             seconds = int(time_string[1])
-        logging.info("%d hours and %d minutes" % (hours, minutes))
-        return hours + minutes/60 + seconds / 3600
+        logging.info("%d hours and %d minutes and %d seconds (%s)" % (hours, minutes, seconds, time_string))
+        time_in_hours = hours + minutes/60 + seconds / 3600
+        logging.info("Time in hours: %.4f" % time_in_hours)
+        return time_in_hours
     else:
         lines = list(open(file_name).readlines())
         line = lines[1].split()
@@ -104,7 +106,7 @@ def format_run_time(hours):
 def make_table(only_callable_variants=""):
     for method in methods:
         run_times[method] = round(
-            sum([get_run_time(job_name, experiment, dataset) for job_name in method_jobs[method]]), 1)
+            sum([get_run_time(job_name, experiment, dataset) for job_name in method_jobs[method]]), 2)
         memory_usage[method] = max([get_memory(job_name, experiment, dataset) for job_name in method_jobs[method]])
         accuracy[method] = get_accuracy(method, only_callable_variants)
         logging.info("Method %s has total run time %d sec and max memory %d bytes" % (
@@ -125,5 +127,7 @@ def make_table(only_callable_variants=""):
     print(tabulate(table, table_headers, tablefmt="latex"))
 
 make_table()
-print("")
+print("<h3>Only including callable variants</h3>")
 make_table("-only-callable")
+print("<h3>Long indels not included</h3>")
+make_table("-short-indels")

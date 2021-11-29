@@ -1,12 +1,12 @@
 
 N_INDIVIDUALS_PANGENIE = [5, 15, 30, 50, 100]  #, 40, 50, 100, 200, 2058]
 N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 200, 2058]
-#N_INDIVIDUALS=[5, 2058]  #, 40, 50, 100, 200, 2058]
+#N_INDIVIDUALS=[30, 2548]  #, 40, 50, 100, 200, 2058]
 WEB_FIGURE_DIR="/var/www/html/genotyping_figures/"
 
 def figure2_file_names(wildcards):
-    return ",".join(["data/dataset1/happy-hg002-usN" + str(i) + "_hg002_simulated_reads_15x-only-callable.summary.csv" for i in N_INDIVIDUALS] + \
-         ["data/dataset1/happy-hg002-pangenieN" + str(i) + "_hg002_simulated_reads_15x-only-callable.summary.csv" for i in N_INDIVIDUALS_PANGENIE])
+    return ",".join(["data/dataset1/happy-hg002-usN" + str(i) + "_hg002_simulated_reads_15x-only-callable.extended.csv" for i in N_INDIVIDUALS] + \
+         ["data/dataset1/happy-hg002-pangenieN" + str(i) + "_hg002_simulated_reads_15x-only-callable.extended.csv" for i in N_INDIVIDUALS_PANGENIE])
 
 def figure2_names(wildcards):
     return ",".join(["us" for i in N_INDIVIDUALS] \
@@ -14,9 +14,9 @@ def figure2_names(wildcards):
 
 rule figure1:
     input:
-        malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.summary.csv",
-        kage="data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv",
-        naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x.summary.csv"
+        malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv",
+        kage="data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.extended.csv",
+        naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure1.html"
     shell:
@@ -25,10 +25,10 @@ rule figure1:
 
 rule figure2:
     input:
-        expand("data/dataset1/happy-hg002-usN{n_individuals}_hg002_simulated_reads_15x-only-callable.summary.csv", n_individuals=N_INDIVIDUALS),
-        expand("data/dataset1/happy-hg002-pangenieN{n_individuals}_hg002_simulated_reads_15x-only-callable.summary.csv", n_individuals=N_INDIVIDUALS_PANGENIE),
-        malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x-only-callable.summary.csv",
-        naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x-only-callable.summary.csv"
+        expand("data/dataset1/happy-hg002-usN{n_individuals}_hg002_simulated_reads_15x-only-callable.extended.csv", n_individuals=N_INDIVIDUALS),
+        expand("data/dataset1/happy-hg002-pangenieN{n_individuals}_hg002_simulated_reads_15x-only-callable.extended.csv", n_individuals=N_INDIVIDUALS_PANGENIE),
+        malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x-only-callable.extended.csv",
+        naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x-only-callable.extended.csv"
     output:
         "figure2.html"
     params:
@@ -41,11 +41,11 @@ rule figure2:
 
 rule figure3:
     input:
-        us = "data/dataset1/happy-hg002-us_hg002_simulated_reads_15x.summary.csv",
-        graphtyper = "data/dataset1/happy-hg002-graphtyper_hg002_simulated_reads_15x.summary.csv",
-        bayestyper = "data/dataset1/happy-hg002-bayestyper_hg002_simulated_reads_15x.summary.csv",
-        gatk = "data/dataset1/happy-hg002-gatk_hg002_simulated_reads_15x.summary.csv",
-        malva = "data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.summary.csv"
+        us = "data/dataset1/happy-hg002-us_hg002_simulated_reads_15x.extended.csv",
+        graphtyper = "data/dataset1/happy-hg002-graphtyper_hg002_simulated_reads_15x.extended.csv",
+        bayestyper = "data/dataset1/happy-hg002-bayestyper_hg002_simulated_reads_15x.extended.csv",
+        gatk = "data/dataset1/happy-hg002-gatk_hg002_simulated_reads_15x.extended.csv",
+        malva = "data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure3.html"
     shell:
@@ -54,13 +54,13 @@ rule figure3:
 
 METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
 #METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
-METHODS = ["us", "pangenie", "graphtyper", "malva"]
+METHODS = ["us", "pangenie", "bayestyper", "gatk", "malva", "graphtyper"]
 METHODS_JOINED = ",".join(METHODS)
 
 
 rule figure4:
     input:
-        expand("data/dataset2/happy-hg002-{method}_hg002_real_reads_15x.summary.csv", method=METHODS)
+        expand("data/dataset2/happy-hg002-{method}_hg002_real_reads_15x.extended.csv", method=METHODS)
     output:
         "figure4.html"
     run:
@@ -70,7 +70,7 @@ rule figure4:
 
 rule general_result_table:
     input:
-        expand("data/{{dataset}}/happy-{{truth_dataset}}-{method}_{{experiment}}.summary.csv", method=METHODS)
+        expand("data/{{dataset}}/happy-{{truth_dataset}}-{method}_{{experiment}}.extended.csv", method=METHODS)
     output:
         "table_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html"
     shell:
@@ -78,8 +78,8 @@ rule general_result_table:
 
 rule simulated_data_result_table:
     input:
-        "data/simulated_dataset2/happy-seed1-usN1000_seed1_simulated_reads_15x.summary.csv",
-        "data/simulated_dataset2/happy-seed1-pangenie_seed1_simulated_reads_15x.summary.csv"
+        "data/simulated_dataset2/happy-seed1-usN1000_seed1_simulated_reads_15x.extended.csv",
+        "data/simulated_dataset2/happy-seed1-pangenie_seed1_simulated_reads_15x.extended.csv"
     output:
         "table_simulated_data.html"
     shell:

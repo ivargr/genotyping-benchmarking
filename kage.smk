@@ -50,8 +50,8 @@ rule genotype:
         benchmark_report="data/{dataset}/benchmarks/usN{n_individuals}_{experiment}.tsv"
     threads:
         config["n_threads"]
-    #benchmark:
-    #    "data/{dataset}/benchmarks/usN{n_individuals}_{experiment}.tsv"
+    benchmark:
+        "data/{dataset}/benchmarks/usN{n_individuals}_{experiment}-snakemake.tsv"
     params:
         sample_name=get_sample_name_from_experiment,
         read_coverage=get_read_coverage_from_experiment
@@ -71,7 +71,7 @@ rule genotype:
         #"-p {input.transition_probs} " 
         #"--average-coverage {params.read_coverage} "
         "--average-coverage 15.0 "
-        #"-x {input.tricky_variants} "
+        "-x {input.tricky_variants} "
         "--sample-name-output {params.sample_name} 2> {output.benchmark_report} "
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
 

@@ -169,7 +169,7 @@ rule make_helper_model:
     resources: mem_gb=300
     shell:
         "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}individuals "
-        "-g {input.genotype_matrix} -w 500 -v {input.variant_to_nodes} -n {input.node_count_model} -t {config[n_threads_data_quarter]} "
+        "-g {input.genotype_matrix} -w 1500 -v {input.variant_to_nodes} -n {input.node_count_model} -t {config[n_threads_data]} "
         " "
 
 rule make_variant_kmer_index:

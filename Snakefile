@@ -17,7 +17,17 @@ ruleorder:
 
 rule all:
     input:
-        "data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv",
+        WEB_PATH + "table11.html"
+        #"data/dataset3/happy-hg002-usN2058_hg002_simulated_reads_15x.extended.csv",
+        #"data/simulated_dataset1/happy-seed1-usN800_seed1_simulated_reads_15x.extended.csv",
+        #"data/dataset1/happy-hg002-gatk_hg002_simulated_reads_15x.extended.csv",
+        #WEB_PATH + "figure1.html",
+        #"data/dataset1/debugging-usN2058-hg002-hg002_simulated_reads_15x.txt",
+        #"data/dataset2/debugging-usN2058-hg002-hg002_real_reads_15x.txt"
+        #"data/dataset2/happy-hg002-usN2058_hg002_simulated_reads_15x.summary.csv",
+        #"WEB_PATH + "table1.html",
+        #"data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.extended.csv",
+        #"data/dataset1/happy-hg002-usN30_hg002_simulated_reads_15x.summary.csv",
         #WEB_PATH + "table2.html",
         #"data/dataset2/usN2058_hg002_real_reads_15x.vcf.gz"
         #WEB_PATH + "table10.html",

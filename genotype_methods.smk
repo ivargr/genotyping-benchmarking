@@ -25,14 +25,15 @@ rule run_malva:
         kmer_pre="data/{dataset}/{reads}.kmc.out.kmc_pre",
         kmer_suf="data/{dataset}/{reads}.kmc.out.kmc_suf"
     output:
-        genotypes="data/{dataset}/malva_{reads}.vcf.gz"
-    benchmark:
-        "data/{dataset}/benchmarks/malva_{reads}.tsv"
+        genotypes="data/{dataset}/malva_{reads}.vcf.gz",
+        benchmark="data/{dataset}/benchmarks/malva_{reads}.tsv"
+    #benchmark:
+    #    "data/{dataset}/benchmarks/malva_{reads}.tsv"
     resources:
         mem_gb=100
     threads: 4
     shell:
-        "malva-geno -k 35 -r 43 -b 16 {input.ref} {input.variants} data/{wildcards.dataset}/{wildcards.reads}.kmc.out > {output.genotypes}.tmp && "
+        "/usr/bin/time -v malva-geno -k 35 -r 43 -b 16 {input.ref} {input.variants} data/{wildcards.dataset}/{wildcards.reads}.kmc.out 1> {output.genotypes}.tmp 2> {output.benchmark} && "
         # convert nan quality to 0
         """awk '{{ $6 = ($6 == "nan" ? 0 : $6) }} 1' OFS="\\t" {output.genotypes}.tmp | bgzip -f -c > {output.genotypes}"""
         #"malva-geno call -k 35 -r 41 -b 16 {input.ref} {input.variants} {wildcards.reads}.kmc.out > {output.genotypes}"
@@ -44,17 +45,20 @@ rule run_pangenie:
         variants = "data/{dataset}/variants_{n_individuals}individuals_multiallelic.vcf",
     output:
         genotypes="data/{dataset}/pangenieN{n_individuals,\d+}_{reads}.vcf",
-        genotypes_gz="data/{dataset}/pangenieN{n_individuals,\d+}_{reads}.vcf.gz"
+        genotypes_gz="data/{dataset}/pangenieN{n_individuals,\d+}_{reads}.vcf.gz",
+        benchmark="data/{dataset}/benchmarks/pangenieN{n_individuals}_{reads}.tsv"
     threads:
         config["n_threads"]
     resources:
         mem_gb=450
-    benchmark:
+    #benchmark:
         #"data/{dataset}/benchmarks/pangenie_{reads}.{n_individuals}individuals.tsv"
-        "data/{dataset}/benchmarks/pangenieN{n_individuals}_{reads}.tsv"
+    #    "data/{dataset}/benchmarks/pangenieN{n_individuals}_{reads}.tsv"
     shell:
-        "{config[pangenie_path]} -i {input.reads} -r {input.ref} -v {input.variants} -j 32 -k 31 -t {config[n_threads]} -g -o {output.genotypes} && mv {output.genotypes}_genotyping.vcf {output.genotypes} && "
-        "bgzip -f -c {output.genotypes} > {output.genotypes_gz} && tabix -f -p vcf {output.genotypes_gz}"
+        "/usr/bin/time -v {config[pangenie_path]} -i {input.reads} -r {input.ref} -v {input.variants} -j 32 -k 31 " 
+        " -t {config[n_threads]} -g -o {output.genotypes} 2> {output.benchmark} "
+        "&& mv {output.genotypes}_genotyping.vcf {output.genotypes} && "
+        "bgzip -f -c {output.genotypes} > {output.genotypes_gz}  && tabix -f -p vcf {output.genotypes_gz}"
 
 
 # hack to run pangenie with 32 individuals if none are specified
@@ -94,17 +98,19 @@ rule run_graphtyper:
         ref= "data/{dataset}/ref.fa",
         variants = "data/{dataset}/variants.vcf.gz",
     output:
-        genotypes="data/{dataset}/graphtyper_{reads}.vcf.gz"
+        genotypes="data/{dataset}/graphtyper_{reads}.vcf.gz",
+        benchmark="data/{dataset}/benchmarks/graphtyper_{reads}.tsv"
     threads:
         config["n_threads"]
-    benchmark:
-        "data/{dataset}/benchmarks/graphtyper_{reads}.tsv"
+    #benchmark:
+    #    "data/{dataset}/benchmarks/graphtyper_{reads}.tsv"
     shell:
-        "rm -rf graphtyper_results_{wildcards.reads} && "
-        "python3 scripts/run_graphtyper_in_parallel.py 2500000 {input.fai} "
-        "| parallel --line-buffer -j {config[n_threads]} 'graphtyper genotype {input.ref} --output=graphtyper_results_{wildcards.reads} --sam={input.sorted_bam} --region={{}} --threads=1 --vcf {input.variants}' && "
-        "find graphtyper_results_{wildcards.reads}/* -name '*.vcf.gz' | sort > vcf_file_list && "
-        "bcftools concat --naive --file-list vcf_file_list -Oz | bcftools sort -Oz > {output.genotypes}"
+        "/usr/bin/time -v ./scripts/run_graphtyper.sh {wildcards.reads} {input.ref} {input.sorted_bam} {input.variants} {output.genotypes} {config[n_threads]} 2> {output.benchmark}"
+        #"rm -rf graphtyper_results_{wildcards.reads} && "
+        #"python3 scripts/run_graphtyper_in_parallel.py 2500000 {input.fai} "
+        #"| parallel --line-buffer -j {config[n_threads]} 'graphtyper genotype {input.ref} --output=graphtyper_results_{wildcards.reads} --sam={input.sorted_bam} --region={{}} --threads=1 --vcf {input.variants}' && "
+        #"find graphtyper_results_{wildcards.reads}/* -name '*.vcf.gz' | sort > vcf_file_list && "
+        #"bcftools concat --naive --file-list vcf_file_list -Oz | bcftools sort -Oz > {output.genotypes}"
 
 
 rule run_kmc_bayestyper:
@@ -206,11 +212,12 @@ rule run_gatk:
         "rm -f data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf.gz && "
         "rm -f data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf.gz.tbi && "
         "python3 scripts/partition_genome.py 10000000 {input.fai} | "
-        "parallel --line-buffer -j {config[n_threads]} /home/ivar/dev/gatk-4.1.9.0/gatk HaplotypeCaller "
+        "parallel --line-buffer -j {config[n_threads]} gatk HaplotypeCaller "
         "--reference {input.ref} --input {input.sorted_bam} --native-pair-hmm-threads 1 --output data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_{{}}.vcf --intervals {{}} "
-        "--minimum-mapping-quality 20 --alleles {input.variants} && "
+        "--minimum-mapping-quality 20 "
+        #"--alleles {input.variants} "
+        "&& "
         "ls data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf | xargs -P 16 -n 1 bgzip -f && "
         "ls data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf.gz | xargs -P 16 -n 1 tabix -f -p vcf && "
         "python3 scripts/partition_genome.py 10000000 data/{wildcards.dataset}/ref.fa.fai 'data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_---.vcf.gz' > gatk_file_list && "
         "bcftools concat -a -O z --file-list gatk_file_list | bcftools sort -O z > {output.genotypes}"
-        #"cat gatk_genotypes.vcf | awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k2,2n"}' > gatk_genotypes_sorted.vcf
