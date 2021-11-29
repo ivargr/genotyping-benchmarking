@@ -1,6 +1,5 @@
 configfile: "config.yaml"
 
-DATASETS = ["dataset1", "dataset2"]
 WEB_PATH = "/var/www/html/genotyping_figures/"
 
 include:

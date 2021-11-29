@@ -1,8 +1,11 @@
 
 N_INDIVIDUALS_PANGENIE = [5, 15, 30, 50, 100]  #, 40, 50, 100, 200, 2058]
 N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 200, 2058]
-#N_INDIVIDUALS=[30, 2548]  #, 40, 50, 100, 200, 2058]
-WEB_FIGURE_DIR="/var/www/html/genotyping_figures/"
+
+METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
+#METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
+METHODS = ["us", "pangenie", "bayestyper", "gatk", "malva", "graphtyper"]
+METHODS_JOINED = ",".join(METHODS)
 
 def figure2_file_names(wildcards):
     return ",".join(["data/dataset1/happy-hg002-usN" + str(i) + "_hg002_simulated_reads_15x-only-callable.extended.csv" for i in N_INDIVIDUALS] + \
@@ -51,11 +54,6 @@ rule figure3:
     shell:
         "genotyping_analysis plot_results_files -f {input.us},{input.graphtyper},{input.bayestyper},{input.gatk} -n us,graphtyper,bayestyper,gatk -o {output}"
 
-
-METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
-#METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
-METHODS = ["us", "pangenie", "bayestyper", "gatk", "malva", "graphtyper"]
-METHODS_JOINED = ",".join(METHODS)
 
 
 rule figure4:
