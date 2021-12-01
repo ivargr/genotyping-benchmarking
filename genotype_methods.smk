@@ -14,6 +14,7 @@ rule run_kmc:
     resources:
         mem_gb=20
     shell:
+        "rm -rf kmc_tmp && "
         "mkdir -p kmc_tmp && "
         "kmc -ci0 -m8 -k43 -t{config[n_threads]} -fm {input} data/{wildcards.dataset}/{wildcards.reads}.kmc.out kmc_tmp"
 
@@ -50,7 +51,7 @@ rule run_pangenie:
     threads:
         config["n_threads"]
     resources:
-        mem_gb=450
+        mem_gb=150
     #benchmark:
         #"data/{dataset}/benchmarks/pangenie_{reads}.{n_individuals}individuals.tsv"
     #    "data/{dataset}/benchmarks/pangenieN{n_individuals}_{reads}.tsv"

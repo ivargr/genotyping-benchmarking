@@ -1,15 +1,16 @@
 
 N_INDIVIDUALS_PANGENIE = [5, 15, 30, 50, 100]  #, 40, 50, 100, 200, 2058]
 N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 200, 2058]
+#N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 550, 600, 650, 700, 800, 1000, 2548]  #, 40, 50, 100, 200, 2058]
 
 METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
 #METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
-METHODS = ["us", "pangenie", "bayestyper", "gatk", "malva", "graphtyper"]
+METHODS = ["us", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
 METHODS_JOINED = ",".join(METHODS)
 
 def figure2_file_names(wildcards):
-    return ",".join(["data/dataset1/happy-hg002-usN" + str(i) + "_hg002_simulated_reads_15x-only-callable.extended.csv" for i in N_INDIVIDUALS] + \
-         ["data/dataset1/happy-hg002-pangenieN" + str(i) + "_hg002_simulated_reads_15x-only-callable.extended.csv" for i in N_INDIVIDUALS_PANGENIE])
+    return ",".join(["data/dataset1/happy-hg002-usN" + str(i) + "_hg002_simulated_reads_15x.extended.csv" for i in N_INDIVIDUALS] + \
+         ["data/dataset1/happy-hg002-pangenieN" + str(i) + "_hg002_simulated_reads_15x.extended.csv" for i in N_INDIVIDUALS_PANGENIE])
 
 def figure2_names(wildcards):
     return ",".join(["us" for i in N_INDIVIDUALS] \
@@ -23,23 +24,23 @@ rule figure1:
     output:
         "figure1.html"
     shell:
-        "genotyping_analysis plot_results_files -f {input.malva},{input.kage},{input.naivekage} -n malva,kage,naivekage -o {output}"
+        "python3 scripts/make_scatter_plot.py plot_results_files -f {input.malva},{input.kage},{input.naivekage} -n malva,kage,naivekage -o {output}"
 
 
 rule figure2:
     input:
-        expand("data/dataset1/happy-hg002-usN{n_individuals}_hg002_simulated_reads_15x-only-callable.extended.csv", n_individuals=N_INDIVIDUALS),
-        expand("data/dataset1/happy-hg002-pangenieN{n_individuals}_hg002_simulated_reads_15x-only-callable.extended.csv", n_individuals=N_INDIVIDUALS_PANGENIE),
-        malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x-only-callable.extended.csv",
-        naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x-only-callable.extended.csv"
+        expand("data/dataset1/happy-hg002-usN{n_individuals}_hg002_simulated_reads_15x.extended.csv", n_individuals=N_INDIVIDUALS),
+        expand("data/dataset1/happy-hg002-pangenieN{n_individuals}_hg002_simulated_reads_15x.extended.csv", n_individuals=N_INDIVIDUALS_PANGENIE),
+        malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv",
+        naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure2.html"
     params:
         file_names=figure2_file_names,
         names=figure2_names,
     shell:
-        #"genotyping_analysis plot_results_files -f {input.malva},{input.us_no_model},{params.file_names} -n malva,nomodel,{params.names} -o {output}"
-        "genotyping_analysis plot_results_files -f {params.file_names},{input.malva},{input.naivekage} -n {params.names},malva,naivekage -o {output} --type f1"
+        #"python3 scripts/make_scatter_plot.py plot_results_files -f {input.malva},{input.us_no_model},{params.file_names} -n malva,nomodel,{params.names} -o {output}"
+        "python3 scripts/make_scatter_plot.py plot_results_files -f {params.file_names},{input.malva},{input.naivekage} -n {params.names},malva,naivekage -o {output} --type f1"
 
 
 rule figure3:
@@ -52,7 +53,7 @@ rule figure3:
     output:
         "figure3.html"
     shell:
-        "genotyping_analysis plot_results_files -f {input.us},{input.graphtyper},{input.bayestyper},{input.gatk} -n us,graphtyper,bayestyper,gatk -o {output}"
+        "python3 scripts/make_scatter_plot.py plot_results_files -f {input.us},{input.graphtyper},{input.bayestyper},{input.gatk} -n us,graphtyper,bayestyper,gatk -o {output}"
 
 
 
@@ -63,7 +64,7 @@ rule figure4:
         "figure4.html"
     run:
         file_names_joined = ",".join(input)
-        shell("genotyping_analysis plot_results_files -f {file_names_joined} -n {METHODS_JOINED} -o {output}")
+        shell("python3 scripts/make_scatter_plot.py plot_results_files -f {file_names_joined} -n {METHODS_JOINED} -o {output}")
 
 
 rule general_result_table:
@@ -163,5 +164,19 @@ rule trio_concordance_table:
         expand("data/dataset2/aj_pedigree_{method}/aj_pedigree_tab_delim_detailed_log.tsv", method=METHODS)
 
 
+rule f1_figure:
+    input:
+        expand("data/{{dataset}}/happy-{{truth_dataset}}-{method}_{{experiment}}.extended.csv",method=METHODS)
+    output:
+        "f1_figure_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html"
+    shell:
+        "python3 scripts/make_f1_figure.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} {output}"
 
 
+rule f1_figure_whole_genome:
+    input:
+        "f1_figure_dataset2-hg002_real_reads_15x-hg002.html"
+    output:
+        "f1_figure_whole_genome.html"
+    shell:
+        "cp {input} {output}"

@@ -3,12 +3,15 @@
 This repository contains a Snakemake-pipeline for benchmarking KAGE and other genotypers. Benchmarks can be done on both real (experimental) or simulated data. Running all the experiments will take 2-3 days using 16 CPU cores for each genotyper, as some of the genotypers require 10+ hours to run. However, running all genotypers on a small simulated dataset can be done in less than an hour.
 
 ## Installation
-### Step 1: Clone this repository
+### Step 1: Intall Snakemake
+Before you start, you will need Snakemake, so [follow the instructions](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) to install Snakemake if you don't have Snakemake allready.
+
+### Step 2: Clone this repository
 ```bash
 git clone https://github.com/ivargr/genotyping-benchmarking
 ```
 
-### Step 2: Install dependencies
+### Step 3: Install dependencies
 There are many dependencies, and these can and should be installed with Conda:
 ```bash
 cd genotyping-benchmarking
