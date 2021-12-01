@@ -12,12 +12,18 @@ include:
     "read_simulation.smk"
 
 ruleorder:
-    downsample_real_reads > convert_fa_to_fq
+    downsample_real_reads15x > convert_fa_to_fq
+
+ruleorder:
+    downsample_real_reads30x > convert_fa_to_fq
+
 
 rule all:
     input:
+        WEB_PATH + "supplementary_table.html"
+        #"data/dataset1/happy-hg002-usN2548_hg002_simulated_reads_15x.extended.csv",
         #WEB_PATH + "figure2.html"
-        "data/dataset2/happy-hg002-malva_hg002_real_reads_15x.extended.csv",
+        #"data/dataset2/happy-hg002-malva_hg002_real_reads_15x.extended.csv",
         #"data/dataset1/happy-hg002-usN2548_hg002_simulated_reads_15x.extended.csv",
         #WEB_PATH + "f1_figure_whole_genome.html"
         #"data/dataset3/happy-hg002-usN2058_hg002_simulated_reads_15x.extended.csv",

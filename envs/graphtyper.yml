@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - parallel
+  - bcftools
+  - graphtyper=2.7.1

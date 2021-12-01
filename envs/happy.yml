@@ -1,0 +1,5 @@
+channels:
+  - bioconda
+dependencies:
+  - hap.py==0.3.12
+  - rtg-tools

@@ -1,0 +1,9 @@
+channels:
+  - bioconda
+dependencies:
+  - bwa=0.7.17
+  - samtools=1.10
+  - bcftools=1.10.2
+  - sambamba=0.8
+  - tabix
+  - bgzip

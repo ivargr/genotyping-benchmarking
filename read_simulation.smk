@@ -61,7 +61,7 @@ rule get_real_raw_reads:
         "wget -O - {params.url} | bedtools bamtofastq -i /dev/stdin -fq /dev/stdout | gzip > {output.reads}"
 
 
-rule downsample_real_reads:
+rule downsample_real_reads15x:
     input:
         rules.get_real_raw_reads.output
         #reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
@@ -71,12 +71,33 @@ rule downsample_real_reads:
         "zcat {input} | python3 scripts/downsample_fq.py 4 > {output.reads}"
 
 
-rule convert_real_reads_to_fa:
+rule downsample_real_reads30x:
     input:
-        rules.downsample_real_reads.output
+        rules.get_real_raw_reads.output
+        #reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
+    output:
+        reads="data/{dataset}/{truth_dataset}_real_reads_30x.fq",
+    shell:
+        "zcat {input} | seqtk sample -s{config[random_seed]} - 600000000 > {output.reads}"
+        #"zcat {input} | python3 scripts/downsample_fq.py 4 > {output.reads}"
+
+
+rule convert_real_reads_to_fa15x:
+    input:
+        rules.downsample_real_reads15x.output
         #"data/{dataset}/{truth_dataset}_real_reads_15x.fq",
     output:
         "data/{dataset}/{truth_dataset}_real_reads_15x.fa",
+    shell:
+        "cat {input} | seqtk seq -A > {output}"
+
+
+rule convert_real_reads_to_fa30x:
+    input:
+        rules.downsample_real_reads30x.output
+        #"data/{dataset}/{truth_dataset}_real_reads_15x.fq",
+    output:
+        "data/{dataset}/{truth_dataset}_real_reads_30x.fa",
     shell:
         "cat {input} | seqtk seq -A > {output}"
 

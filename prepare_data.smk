@@ -36,6 +36,7 @@ rule prepare_simulated_dataset_vcf:
     params:
         n_individuals=get_n_individuals,
         n_variants=get_n_variants
+    conda: "envs/prepare_data.yml"
     shell:
         "graph_read_simulator simulate_population_vcf -r {input.ref} -n {params.n_variants} -i {params.n_individuals} -o {output.vcf} -I {output.individual_vcf} && "
         "bgzip -c -f {output.vcf} > {output.vcf_gz} && tabix -f -p vcf {output.vcf_gz} && "
@@ -49,6 +50,7 @@ rule prepare_dataset_vcf:
         "data/dataset{number,\d+}/variants.vcf.gz"
     params:
         regions=get_dataset_regions_comma_separated
+    conda: "envs/prepare_data.yml"
     shell:
         #"bcftools view -O z --regions {config[analysis_regions][{dataset}]} variants.vcf.gz > {output} && tabix -p vcf {output} "
         "bcftools view -O z --regions {params.regions} {input.vcf} > {output} && tabix -f -p vcf {output} "
@@ -61,6 +63,7 @@ rule prepare_dataset_reference:
         index="data/{dataset}/ref.fa.fai"
     params:
         regions=get_dataset_regions
+    conda: "envs/prepare_data.yml"
     shell:
         "samtools faidx {input} {params.regions} | python3 scripts/format_fasta_header.py > {output.full_reference}  && " 
         "samtools faidx {output.full_reference}"
@@ -72,6 +75,7 @@ rule make_flat_reference:
         index="data/{d}/ref_flat.fa.fai"
     #shell: "grep -v '^>' {input} > {input}.no-headers && echo -e \">ref\n$(cat {input}.no-headers)\" > {output.fasta} && samtools faidx {output.fasta}"
     #shell: "grep -v '^>' {input} > {output.fasta}.tmp && echo '>ref' > {output.fasta} && cat {output.fasta}.tmp >> {output.fasta} && samtools faidx {output.fasta}"
+    conda: "envs/prepare_data.yml"
     shell:
         r"""python3 scripts/make_flat_reference.py {input} | sed -e 's/.\{{80\}}/&\n/g' > {output.fasta} && samtools faidx {output.fasta}"""
 
@@ -87,6 +91,7 @@ rule get_all_sample_names_from_vcf:
     output:
         sample_names="data/{dataset}/sample_names.txt",
         sample_names_random="data/{dataset}/sample_names_random_order.txt"
+    conda: "envs/prepare_data.yml"
     shell:
         "bcftools query -l {input} > {output.sample_names} && shuf {output.sample_names} > {output.sample_names_random}"
 
@@ -99,6 +104,7 @@ rule create_vcf_with_subsample_of_individuals:
         subsamples="data/{dataset}/sample_names_random_order_{n_individuals}.txt",
         vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz",
         vcfindex="data/{dataset}/variants_{n_individuals}individuals.vcf.gz.tbi"
+    conda: "envs/prepare_data.yml"
     shell:
         "head -n {wildcards.n_individuals} {input.sample_names_random} > {output.subsamples} && "
         "bcftools view -O z -S {output.subsamples} {input.vcf} > {output.vcf} && tabix -f -p vcf {output.vcf}"
@@ -129,6 +135,7 @@ rule bwa_index_reference_genome:
         "data/{dataset}/ref.fa"
     output:
         "data/{dataset}/ref.fa.bwt"
+    conda: "envs/bwa.yml"
     shell:
         "bwa index {input}"
 
@@ -136,11 +143,13 @@ rule bwa_index_reference_genome:
 rule convert_fa_to_fq:
     input: "{reads}.fa"
     output: "{reads}.fq"
+    conda: "envs/prepare_data.yml"
     shell: "scripts/convert_fa_to_fq.sh {input} > {output}"
 
 
 rule make_dict_file:
     input: "data/{dataset}/ref.fa"
     output: "data/{dataset}/ref.dict"
-    shell: "java -jar /home/ivar/dev/picard.jar CreateSequenceDictionary -R {input} -O {output}"
+    conda: "envs/picard.yml"
+    shell: "picard CreateSequenceDictionary -R {input} -O {output}"
     

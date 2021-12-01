@@ -104,6 +104,15 @@ rule table2:
         "cp {input} {output}"
 
 
+rule supplementary_table:
+    input:
+        "table_dataset2-hg002_real_reads_30x-hg002.html"
+    output:
+        "supplementary_table.html"
+    shell:
+        "cp {input} {output}"
+
+
 rule table10:
     input:
         "table_dataset3-hg002_simulated_reads_15x-hg002.html"

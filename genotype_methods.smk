@@ -13,10 +13,12 @@ rule run_kmc:
         config["n_threads"]
     resources:
         mem_gb=20
+    conda:
+        "envs/kmc.yml"
     shell:
         "rm -rf kmc_tmp && "
         "mkdir -p kmc_tmp && "
-        "kmc -ci0 -m8 -k43 -t{config[n_threads]} -fm {input} data/{wildcards.dataset}/{wildcards.reads}.kmc.out kmc_tmp"
+        "kmc -ci1 -m8 -k43 -t{config[n_threads]} -fm {input} data/{wildcards.dataset}/{wildcards.reads}.kmc.out kmc_tmp"
 
 
 rule run_malva:
@@ -30,6 +32,8 @@ rule run_malva:
         benchmark="data/{dataset}/benchmarks/malva_{reads}.tsv"
     #benchmark:
     #    "data/{dataset}/benchmarks/malva_{reads}.tsv"
+    conda:
+        "envs/malva.yml"
     resources:
         mem_gb=100
     threads: 4
@@ -55,6 +59,7 @@ rule run_pangenie:
     #benchmark:
         #"data/{dataset}/benchmarks/pangenie_{reads}.{n_individuals}individuals.tsv"
     #    "data/{dataset}/benchmarks/pangenieN{n_individuals}_{reads}.tsv"
+    conda: "envs/bwa.yml"
     shell:
         "/usr/bin/time -v {config[pangenie_path]} -i {input.reads} -r {input.ref} -v {input.variants} -j 32 -k 31 " 
         " -t {config[n_threads]} -g -o {output.genotypes} 2> {output.benchmark} "
@@ -68,6 +73,7 @@ rule pangenie_wrapper:
         genotypes = "data/{dataset}/pangenieN32_{experiment}.vcf.gz"
     output:
         genotypes = "data/{dataset}/pangenie_{experiment,[a-z0-9_]+}.vcf.gz"
+    conda: "envs/bwa.yml"
     shell:
         "cp {input} {output} && tabix -f -p vcf {output}"
 
@@ -87,6 +93,7 @@ rule map_reads_to_reference:
         mem_gb=80
     benchmark:
         "data/{dataset}/benchmarks/bwamem_{sample_id}_{read_info}.tsv"
+    conda: "envs/bwa.yml"
     shell:
         "bwa mem -R '@RG\\tID:{wildcards.sample_id}\\tSM:{wildcards.sample_id}' -t {config[n_threads]} {input.ref} {input.reads} | samtools view -b > {output.bam} && "
         "sambamba sort {output.bam} && sambamba index -p {output.sorted_bam}"
@@ -105,6 +112,7 @@ rule run_graphtyper:
         config["n_threads"]
     #benchmark:
     #    "data/{dataset}/benchmarks/graphtyper_{reads}.tsv"
+    conda: "envs/graphtyper.yml"
     shell:
         "/usr/bin/time -v ./scripts/run_graphtyper.sh {wildcards.reads} {input.ref} {input.sorted_bam} {input.variants} {output.genotypes} {config[n_threads]} 2> {output.benchmark}"
         #"rm -rf graphtyper_results_{wildcards.reads} && "
@@ -126,6 +134,8 @@ rule run_kmc_bayestyper:
         mem_gb=20
     benchmark:
         "data/{dataset}/benchmarks/bayestyper_kmc_{reads}.tsv"
+    conda:
+        "envs/kmc.yml"
     shell:
         "mkdir -p kmc_tmp_bayestyper && "
         "kmc -t{config[n_threads]} -k55 -ci1 -fa {input} data/{wildcards.dataset}/{wildcards.reads}.kmers_bayestyper kmc_tmp_bayestyper"
@@ -137,6 +147,7 @@ rule make_multiallelic_variants_for_bayestyper:
         ref= "data/{dataset}/ref.fa",
     output:
         "data/{dataset}/variants_no_genotypes_multiallelic.vcf"
+    conda: "envs/bwa.yml"
     shell:
         "bcftools norm -m +any -f {input.ref} {input.vcf} > {output}"
 
@@ -159,6 +170,7 @@ rule make_bloomfilter_for_bayestyper:
         config["n_threads"]
     benchmark:
         "data/{dataset}/benchmarks/bayestyper_bloomfilter_{reads}.tsv"
+    conda: "envs/bayestyper.yml"
     shell:
         "bayesTyperTools makeBloom -k data/{wildcards.dataset}/{wildcards.reads}.kmers_bayestyper -p {config[n_threads]}"
 
@@ -183,6 +195,7 @@ rule run_bayestyper:
     threads: config["n_threads"]
     resources:
         mem_gb=50
+    conda: "envs/bayestyper.yml"
     shell:
         "mkdir -p data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads} && "
         "rm -rf data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads}/* && "
@@ -208,6 +221,7 @@ rule run_gatk:
         "data/{dataset}/benchmarks/gatk_{reads}.tsv"
     resources:
         mem_gb=50
+    conda: "envs/gatk.yml"
     shell:
         "rm -f data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf && "
         "rm -f data/{wildcards.dataset}/{wildcards.reads}_tmp_gatk_variants_*.vcf.gz && "

@@ -1,0 +1,9 @@
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - gatk4
+  - python=3
+  - bcftools
+  - parallel

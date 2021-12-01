@@ -102,12 +102,12 @@ rule run_happy:
         truth_short_indels="data/{dataset}/truthShortIndels_{truth_dataset}.vcf.gz",
         truth_regions_file="data/{dataset}/truth_{truth_dataset}_regions.bed",
         ref="data/{dataset}/ref.fa"
-
     output:
         output_file="data/{dataset}/happy-{truth_dataset}-{run}.extended.csv",
         output_file_only_callable="data/{dataset}/happy-{truth_dataset}-{run}-only-callable.extended.csv",
         output_file_short_indels="data/{dataset}/happy-{truth_dataset}-{run}-short-indels.extended.csv",
-
+    conda:
+        "envs/happy.yml"
     shell:
         """zcat {input.genotypes} | awk '{{ $6 = ($6 == "inf" ? 0 : $6) }} 1' OFS="\\t" | bgzip -c > {input.genotypes}.inf-replaced.vcf.gz && """
         "tabix -f -p vcf {input.genotypes}.inf-replaced.vcf.gz && "

@@ -1,0 +1,6 @@
+channels:
+  - bioconda
+dependencies:
+  - bayestyper=1.5
+  - bcftools
+  - tabix
