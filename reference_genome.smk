@@ -12,7 +12,7 @@ rule convert_reference_genome_to_fasta:
         fai="data/hg38.fa.fai"
     conda: "envs/prepare_data.yml"
     shell:
-        "twoBitToFa {input} {output} && samtools faidx {output}"
+        "twoBitToFa {input} {output.ref} && samtools faidx {output.ref}"
 
 rule convert_reference_to_numeric:
     input:
