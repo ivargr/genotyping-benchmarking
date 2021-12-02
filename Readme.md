@@ -3,36 +3,29 @@
 This repository contains a Snakemake-pipeline for benchmarking KAGE and other genotypers. Benchmarks can be done on both real (experimental) or simulated data. Running all the experiments will take 2-3 days using 16 CPU cores for each genotyper, as some of the genotypers require 10+ hours to run. However, running all genotypers on a small simulated dataset can be done in less than an hour.
 
 ## Installation
-### Step 1: Intall Snakemake
-Before you start, you will need Snakemake, so [follow the instructions](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) to install Snakemake if you don't have Snakemake allready.
+### Step 1: Intall Snakemake and Conda
+Before you start, you will need both Snakemake (to run the benchmarking pipeline) and Conda (to get all the correct dependencies. [Follow the instructions](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) to install Snakemake if you don't have Snakemake allready.
 
 ### Step 2: Clone this repository
 ```bash
 git clone https://github.com/ivargr/genotyping-benchmarking
 ```
 
-### Step 3: Install dependencies
-There are many dependencies, and these can and should be installed with Conda:
-```bash
-cd genotyping-benchmarking
-conda env create -f envs/env.yml
-conda activate genotyping-benchmarking
-```
-
-NOTE: All dependencies can be installed with Conda, except for PanGenie. You will need to install PanGenie manually, and edit config.yaml to specify the installation path of PanGenie.
+NOTE: All dependencies will automatically be installed by Conda when you run the pipeline, except for PanGenie (which is currently not available on Conda). You will need to install PanGenie manually, and edit config.yaml to specify the installation path of PanGenie.
 
 
 ## Running the benchmarks
-The default is to use 16 CPU cores for each method, and 40 CPU-cores to create indexes etc. If you want to change this, edit config.yaml.
+The default is to use 16 CPU cores for each method, and 40 CPU-cores to create indexes etc. If you want to change this, edit config.yaml before running.
 
 
 ### Run on a simulated dataset
-Simply run the following:
+Simply run the following. This will run all the genotypers on a small simulated dataset, specified in config.yaml and create a table with the results.
+
 ```bash
-snakemake -s simulated_experiment.smk
+snakemake -s simulated_experiment.smk --use-conda
 ```
 
-This will generate a file `figure11.html` with the following result table:
+If everything goes fine, a file `figure11.html` with the following result table will be generated:
 
 ```html
 +------------+---------------+------------------+-----------+-------------+----------------+---------+---------+--------------+

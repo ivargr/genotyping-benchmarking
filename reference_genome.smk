@@ -8,10 +8,11 @@ rule convert_reference_genome_to_fasta:
     input:
         "data/hg38.2bit"
     output:
-        "data/hg38.fa"
+        ref="data/hg38.fa",
+        fai="data/hg38.fa.fai"
     conda: "envs/prepare_data.yml"
     shell:
-        "twoBitToFa {input} {output}"
+        "twoBitToFa {input} {output} && samtools faidx {output}"
 
 rule convert_reference_to_numeric:
     input:
@@ -21,7 +22,7 @@ rule convert_reference_to_numeric:
         fai="data/hg38_numeric.fa.fai"
     conda: "envs/prepare_data.yml"
     shell:
-        "sed 's/chr//g' {input} > {output} && samtools faidx {output}"
+        "sed 's/chr//g' {input} > {output.ref} && samtools faidx {output.ref}"
 
 """
 rule index_fasta:
