@@ -294,3 +294,28 @@ rule find_tricky_variants:
         "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 1000 && "
         "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants_nonunique_kmers} -u True"
 
+
+rule make_index_bundle:
+    input:
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        numpy_variants="data/{dataset}/numpy_variants.npz",
+        model="data/{dataset}/combination_model.npz",
+        tricky_variants="data/{dataset}/tricky_variants.npy",
+        helper_variants="data/{dataset}/helper_model_{n_individuals}individuals.npy",
+        combo_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy",
+        kmer_index="data/{dataset}/kmer_index_only_variants.npz"
+    output:
+        "data/{dataset}/index_{n_individuals,\d+}individuals.npz"
+    conda: "envs/kage.yml"
+    shell: 
+        "kage make_index_bundle "
+        "-g {input.variant_to_nodes} "
+        "-v {input.numpy_variants} "
+        "-A {input.model} "
+        "-x {input.tricky_variants} "
+        "-f {input.helper_variants} "
+        "-F {input.combo_matrix} "
+        "-i {input.kmer_index} "
+        "-o {output} "
+
+

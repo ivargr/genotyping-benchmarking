@@ -20,7 +20,9 @@ ruleorder:
 
 rule all:
     input:
-        WEB_PATH + "supplementary_table.html"
+        #WEB_PATH + "supplementary_table.html"
+        #"data/simulated_dataset0/index_2058individuals.npz"
+        #WEB_PATH + "supplementary_table.html"
         #"data/dataset1/happy-hg002-usN2548_hg002_simulated_reads_15x.extended.csv",
         #WEB_PATH + "figure2.html"
         #"data/dataset2/happy-hg002-malva_hg002_real_reads_15x.extended.csv",

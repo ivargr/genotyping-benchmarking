@@ -6,6 +6,6 @@ dependencies:
   - python=3.8
   - pip
   - pip:
-      - kage
+      - kage-genotyper==0.0.7
       - obgraph
   - tabix

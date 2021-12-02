@@ -43,6 +43,7 @@ rule genotype:
         helper_model="data/{dataset}/helper_model_{n_individuals}individuals.npy",
         helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy",
         tricky_variants="data/{dataset}/tricky_variants.npy",
+        index_bundle="data/{dataset}/index_{n_individuals}individuals.npz"
     output:
         genotypes="data/{dataset}/usN{n_individuals,\d+}_{experiment,[a-z0-9_]+}.vcf.gz",
         probs="data/{dataset}/usN{n_individuals,\d+}_{experiment,[a-z0-9_]+}.vcf.gz.tmp.probs.npy",
@@ -58,21 +59,18 @@ rule genotype:
         read_coverage=get_read_coverage_from_experiment
     shell:
         "/usr/bin/time -v kage genotype -c {input.node_counts} "
-        "-g {input.variant_to_nodes} " 
-        "-v {input.variants} " 
-        "-A {input.model} " 
-        #"-G {input.genotype_frequencies} " 
-        #"-M {input.most_similar_variant_lookup} " 
-        "-f {input.helper_model} "
-        "-F {input.helper_model_combo_matrix} "
-        "-o {output.genotypes}.tmp " 
+        "-i {input.index_bundle} "
+        #"-g {input.variant_to_nodes} " 
+        #"-v {input.variants} " 
+        #"-A {input.model} " 
+        #"-f {input.helper_model} "
+        #"-F {input.helper_model_combo_matrix} "
+        #"-x {input.tricky_variants} "
         "-C CombinationModelGenotyper " 
         "-t {config[n_threads]} "
         "-q 80 " 
-        #"-p {input.transition_probs} " 
-        #"--average-coverage {params.read_coverage} "
         "--average-coverage 15.0 "
-        "-x {input.tricky_variants} "
+        "-o {output.genotypes}.tmp " 
         "--sample-name-output {params.sample_name} 2> {output.benchmark_report} "
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
 
