@@ -4,6 +4,9 @@ channels:
   - defaults
 dependencies:
   - gatk4
-  - python=3
+  - python=3.8
+  - pip
+  - pip:
+      - numpy
   - bcftools
   - parallel

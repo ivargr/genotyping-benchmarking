@@ -30,7 +30,7 @@ rule download_truth_file:
     params:
         vcf_url=get_truth_file_vcf_url,
         regions_url=get_truth_file_regions_url
-
+    conda: "envs/prepare_data.yml"
     shell:
         # hacky way to convert chromosomes to numeric:
         "wget -O {output.vcf}.tmp.gz {params.vcf_url} && gunzip -f {output.vcf}.tmp.gz && sed -i 's/chr//g' {output.vcf}.tmp && bgzip -f -c {output.vcf}.tmp > {output.vcf} && tabix -f -p vcf {output.vcf} && "
@@ -72,7 +72,7 @@ rule create_truth_file:
 
     params:
         regions = get_dataset_regions_comma_separated
-
+    conda: "envs/prepare_data.yml"
     shell:
         "bcftools view -O z --regions {params.regions} {input.vcf} > {output.vcf} && tabix -f -p vcf {output.vcf} && "
         "python3 scripts/extract_regions_from_bed.py {input.regions_file} {params.regions} > {output.regions_file}"
@@ -81,6 +81,7 @@ rule create_truth_file:
 rule create_truth_file_without_long_indels:
     input: "data/{dataset}/truth_{truth_dataset}.vcf.gz"
     output: "data/{dataset}/truthShortIndels_{truth_dataset}.vcf.gz"
+    conda: "envs/prepare_data.yml"
     shell: "zcat {input} | python3 scripts/filter_vcf_on_indel_length.py 20 | bgzip -c > {output}"
 
 
@@ -90,6 +91,7 @@ rule intersect_truth_file_with_callable_variants:
         vcf="data/{dataset}/variants_no_genotypes.vcf"
     output:
         "data/{dataset}/truthOnlyCallable_{truth_dataset}.vcf.gz"
+    conda: "envs/kage.yml"
     shell:
         "obgraph intersect_vcfs -a {input.truth} -b {input.vcf} -o {output}.tmp && bgzip -f -c {output}.tmp > {output}"
 
@@ -132,6 +134,7 @@ rule add_sampe_name_to_vcf_for_trio_analysis:
         "data/{dataset}/{method}_{sample_name}_real_reads_{coverage,\d+}x.vcf.gz"
     output:
         "data/{dataset}/{method,[a-zA-Z0-9]+}_{sample_name}_real_reads_{coverage,\d+}x.with_sample_name.vcf.gz"
+    conda: "envs/prepare_data.yml"
     shell:
         "echo '{wildcards.sample_name}' > {wildcards.method}_{wildcards.sample_name}.sample_name && "
         "bcftools reheader --samples {wildcards.method}_{wildcards.sample_name}.sample_name -o {output} {input} && "
@@ -150,8 +153,8 @@ rule analyse_trio_concordance:
     shell:
         """
         mkdir -p {params.outputdir} && 
-        export LD_LIBRARY_PATH=/home/ivar/dev/VBT-TrioAnalysis/lib/ && 
-        /home/ivar/dev/VBT-TrioAnalysis/vbt mendelian -ref {input.reference} -mother {input.mother} -father {input.father} \
+        export LD_LIBRARY_PATH=VBT-TrioAnalysis/lib/ && 
+        vbt mendelian -ref {input.reference} -mother {input.mother} -father {input.father} \
         -child {input.child} -pedigree resources/pedigree_aj.ped -outDir {params.outputdir} -out-prefix aj_pedigree --output-violation-regions
         """
 

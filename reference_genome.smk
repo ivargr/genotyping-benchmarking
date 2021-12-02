@@ -9,6 +9,7 @@ rule convert_reference_genome_to_fasta:
         "data/hg38.2bit"
     output:
         "data/hg38.fa"
+    conda: "envs/prepare_data.yml"
     shell:
         "twoBitToFa {input} {output}"
 
@@ -16,9 +17,11 @@ rule convert_reference_to_numeric:
     input:
         "data/hg38.fa"
     output:
-        "data/hg38_numeric.fa"
+        ref="data/hg38_numeric.fa",
+        fai="data/hg38_numeric.fa.fai"
+    conda: "envs/prepare_data.yml"
     shell:
-        "sed 's/chr//g' {input} > {output}"
+        "sed 's/chr//g' {input} > {output} && samtools faidx {output}"
 
 """
 rule index_fasta:
@@ -36,6 +39,7 @@ rule remove_scaffolds_from_reference:
         index="data/hg38_numeric.fa.fai"
     output:
         "data/hg38_chr1-Y.fa"
+    conda: "envs/prepare_data.yml"
     shell:
         "samtools faidx {input.fa} {config[chromosomes]} > {output}"
 

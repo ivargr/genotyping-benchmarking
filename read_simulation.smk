@@ -78,7 +78,7 @@ rule downsample_real_reads30x:
     output:
         reads="data/{dataset}/{truth_dataset}_real_reads_30x.fq",
     shell:
-        "zcat {input} | seqtk sample -s{config[random_seed]} - 600000000 > {output.reads}"
+        "seqtk sample -2 -s{config[random_seed]} {input} 600000000 > {output.reads}"
         #"zcat {input} | python3 scripts/downsample_fq.py 4 > {output.reads}"
 
 

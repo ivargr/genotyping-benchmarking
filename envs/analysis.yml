@@ -1,12 +1,11 @@
 channels:
-  - conda-forge
   - bioconda
+  - conda-forge
   - defaults
 dependencies:
   - python=3.8
   - pip
   - pip:
+      - tabulate
       - numpy
-  - parallel
-  - bcftools
-  - graphtyper=2.7.1
+      - plotly

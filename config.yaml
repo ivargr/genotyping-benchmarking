@@ -29,6 +29,16 @@ thousand_genomes_vcf:
   "http://ivarg.ddns.net/variants.vcf.gz"
 
 analysis_regions:
+  simulated_dataset0:
+    region: "1:1-1000000"
+    genome_size: "1000000"
+    chromosomes: "1"
+    simulation_chromosomes: "1"
+    n_nodes: "5000"
+    vcf: "simulated_vcf"
+    n_variants: 300
+    n_individuals: 500
+
   simulated_dataset1:
     region: "1:1-3000000"
     genome_size: "3000000"

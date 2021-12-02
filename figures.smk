@@ -5,7 +5,7 @@ N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 
 
 METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
 #METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
-METHODS = ["us", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
+METHODS = ["us", "bayestyper", "malva", "graphtyper", "gatk"]
 METHODS_JOINED = ",".join(METHODS)
 
 def figure2_file_names(wildcards):
@@ -23,8 +23,9 @@ rule figure1:
         naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure1.html"
+    conda: "envs/analysis.yml"
     shell:
-        "python3 scripts/make_scatter_plot.py plot_results_files -f {input.malva},{input.kage},{input.naivekage} -n malva,kage,naivekage -o {output}"
+        "python scripts/make_scatter_plot.py plot_results_files -f {input.malva},{input.kage},{input.naivekage} -n malva,kage,naivekage -o {output}"
 
 
 rule figure2:
@@ -38,9 +39,10 @@ rule figure2:
     params:
         file_names=figure2_file_names,
         names=figure2_names,
+    conda: "envs/analysis.yml"
     shell:
         #"python3 scripts/make_scatter_plot.py plot_results_files -f {input.malva},{input.us_no_model},{params.file_names} -n malva,nomodel,{params.names} -o {output}"
-        "python3 scripts/make_scatter_plot.py plot_results_files -f {params.file_names},{input.malva},{input.naivekage} -n {params.names},malva,naivekage -o {output} --type f1"
+        "python scripts/make_scatter_plot.py plot_results_files -f {params.file_names},{input.malva},{input.naivekage} -n {params.names},malva,naivekage -o {output} --type f1"
 
 
 rule figure3:
@@ -52,8 +54,9 @@ rule figure3:
         malva = "data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure3.html"
+    conda: "envs/analysis.yml"
     shell:
-        "python3 scripts/make_scatter_plot.py plot_results_files -f {input.us},{input.graphtyper},{input.bayestyper},{input.gatk} -n us,graphtyper,bayestyper,gatk -o {output}"
+        "python scripts/make_scatter_plot.py plot_results_files -f {input.us},{input.graphtyper},{input.bayestyper},{input.gatk} -n us,graphtyper,bayestyper,gatk -o {output}"
 
 
 
@@ -72,8 +75,9 @@ rule general_result_table:
         expand("data/{{dataset}}/happy-{{truth_dataset}}-{method}_{{experiment}}.extended.csv", method=METHODS)
     output:
         "table_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html"
+    conda: "envs/analysis.yml"
     shell:
-        "python3 scripts/make_result_table.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} > {output}"
+        "python scripts/make_result_table.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} > {output}"
 
 rule simulated_data_result_table:
     input:
@@ -81,8 +85,9 @@ rule simulated_data_result_table:
         "data/simulated_dataset2/happy-seed1-pangenie_seed1_simulated_reads_15x.extended.csv"
     output:
         "table_simulated_data.html"
+    conda: "envs/analysis.yml"
     shell:
-        "python3 scripts/make_result_table.py pangenie,usN1000 seed1_simulated_reads_15x simulated_dataset2 seed1 > {output}  && cat {output}"
+        "python scripts/make_result_table.py pangenie,usN1000 seed1_simulated_reads_15x simulated_dataset2 seed1 > {output}  && cat {output}"
 
 
 rule table1:
@@ -124,7 +129,7 @@ rule table10:
 
 rule table11:
     input:
-        "table_dataset1-hg002_simulated_reads_15x-hg002.html"
+        "table_simulated_dataset0-seed1_simulated_reads_10x-seed1.html"
     #"table_dataset1_hg002_simulated_reads_15x-hg002.html"
     output:
         "table11.html"
@@ -178,8 +183,9 @@ rule f1_figure:
         expand("data/{{dataset}}/happy-{{truth_dataset}}-{method}_{{experiment}}.extended.csv",method=METHODS)
     output:
         "f1_figure_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html"
+    conda: "envs/analysis.yml"
     shell:
-        "python3 scripts/make_f1_figure.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} {output}"
+        "python scripts/make_f1_figure.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} {output}"
 
 
 rule f1_figure_whole_genome:
