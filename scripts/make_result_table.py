@@ -20,12 +20,11 @@ method_jobs  = {
     "malva": ["malva_kmc", "malva"],
     "us": ["mapI1000", "usN2058"],
     "usN1000": ["mapI1000", "usN1000"],
-    "kage": ["mapI1000", "usN2058"],
+    "KAGE": ["mapI1000", "usN2058"],
     "pangenie": ["pangenieN32"]
 }
 
 methods = method_names.split(",")
-
 
 
 def get_accuracy(method_name, only_callable_variants=""):
@@ -65,8 +64,11 @@ def make_table(only_callable_variants=""):
     table = []
 
     for method in methods:
+        method_name = method
+        if method_name == "us":
+            method_name = "KAGE"
         table.append(
-            [method.capitalize()] + accuracy[method] + [format_run_time(run_times[method]), str(round(memory_usage[method])) + " GB"]
+            [method_name.capitalize()] + accuracy[method] + [format_run_time(run_times[method]), str(round(memory_usage[method])) + " GB"]
         )
 
     print(tabulate(table, table_headers, tablefmt="pretty"))

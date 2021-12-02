@@ -75,14 +75,14 @@ rule create_truth_file:
     conda: "envs/prepare_data.yml"
     shell:
         "bcftools view -O z --regions {params.regions} {input.vcf} > {output.vcf} && tabix -f -p vcf {output.vcf} && "
-        "python3 scripts/extract_regions_from_bed.py {input.regions_file} {params.regions} > {output.regions_file}"
+        "python scripts/extract_regions_from_bed.py {input.regions_file} {params.regions} > {output.regions_file}"
 
 
 rule create_truth_file_without_long_indels:
     input: "data/{dataset}/truth_{truth_dataset}.vcf.gz"
     output: "data/{dataset}/truthShortIndels_{truth_dataset}.vcf.gz"
     conda: "envs/prepare_data.yml"
-    shell: "zcat {input} | python3 scripts/filter_vcf_on_indel_length.py 20 | bgzip -c > {output}"
+    shell: "zcat {input} | python scripts/filter_vcf_on_indel_length.py 20 | bgzip -c > {output}"
 
 
 rule intersect_truth_file_with_callable_variants:

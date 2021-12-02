@@ -7,9 +7,12 @@ dependencies:
   - pip
   - pip:
       - graph_read_simulator
+      - obgraph
   - bcftools
   - tabix
   - samtools
   - perl
   - ucsc-twobittofa
   - sed
+  - bedtools
+  - seqtk

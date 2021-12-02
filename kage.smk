@@ -52,6 +52,7 @@ rule genotype:
         config["n_threads"]
     benchmark:
         "data/{dataset}/benchmarks/usN{n_individuals}_{experiment}-snakemake.tsv"
+    conda: "envs/kage.yml"
     params:
         sample_name=get_sample_name_from_experiment,
         read_coverage=get_read_coverage_from_experiment
@@ -99,6 +100,7 @@ rule genotype_with_old_helper_model:
     params:
         sample_name=get_sample_name_from_experiment,
         read_coverage=get_read_coverage_from_experiment
+    conda: "envs/kage.yml"
     shell:
         "kage genotype -c {input.node_counts} "
         "-g {input.variant_to_nodes} "
