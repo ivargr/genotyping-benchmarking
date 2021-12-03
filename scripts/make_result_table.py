@@ -18,9 +18,9 @@ method_jobs  = {
     "gatk": ["bwamem", "gatk"],
     "graphtyper": ["bwamem", "graphtyper"],
     "malva": ["malva_kmc", "malva"],
-    "us": ["mapI1000", "usN2058"],
+    "us": ["mapI1000", "usN2548"],
     "usN1000": ["mapI1000", "usN1000"],
-    "KAGE": ["mapI1000", "usN2058"],
+    "KAGE": ["mapI1000", "usN5488"],
     "pangenie": ["pangenieN32"]
 }
 

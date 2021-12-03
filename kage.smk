@@ -69,7 +69,7 @@ rule genotype:
         "-C CombinationModelGenotyper " 
         "-t {config[n_threads]} "
         "-q 80 " 
-        "--average-coverage 15.0 "
+        "--average-coverage {params.read_coverage} "
         "-o {output.genotypes}.tmp " 
         "--sample-name-output {params.sample_name} 2> {output.benchmark_report} "
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
@@ -118,10 +118,10 @@ rule genotype_with_old_helper_model:
 
 
 
-# hack to run genotyper with 2058 individuals if none are specified
+# hack to run genotyper with 2548 individuals if none are specified
 rule genotype_wrapper:
     input:
-        genotypes = "data/{dataset}/usN2058_{experiment}.vcf.gz"
+        genotypes = "data/{dataset}/usN2548_{experiment}.vcf.gz"
     output:
         genotypes = "data/{dataset}/us_{experiment,[a-z0-9_]+}.vcf.gz"
     shell:

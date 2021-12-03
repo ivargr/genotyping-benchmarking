@@ -5,7 +5,7 @@ N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 
 
 METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
 #METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
-METHODS = ["us", "bayestyper", "malva", "graphtyper", "gatk"]
+METHODS = ["us", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
 METHODS_JOINED = ",".join(METHODS)
 
 def figure2_file_names(wildcards):
@@ -77,7 +77,7 @@ rule general_result_table:
         "table_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html"
     conda: "envs/analysis.yml"
     shell:
-        "python scripts/make_result_table.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} > {output}"
+        "python3 scripts/make_result_table.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} > {output}"
 
 rule simulated_data_result_table:
     input:
