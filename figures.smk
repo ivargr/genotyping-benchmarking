@@ -77,7 +77,7 @@ rule general_result_table:
         "table_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html"
     conda: "envs/analysis.yml"
     shell:
-        "python3 scripts/make_result_table.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} > {output}"
+        "python scripts/make_result_table.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} > {output}"
 
 rule simulated_data_result_table:
     input:

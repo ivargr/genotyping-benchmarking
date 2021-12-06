@@ -85,6 +85,7 @@ rule remove_genotype_info:
     output: "{sample}_no_genotypes.vcf"
     shell: "zcat {input} | cut -f 1-9 - > {output}"
 
+
 rule get_all_sample_names_from_vcf:
     input:
         "data/{dataset}/variants.vcf.gz"
@@ -93,7 +94,8 @@ rule get_all_sample_names_from_vcf:
         sample_names_random="data/{dataset}/sample_names_random_order.txt"
     conda: "envs/prepare_data.yml"
     shell:
-        "bcftools query -l {input} > {output.sample_names} && shuf {output.sample_names} > {output.sample_names_random}"
+        "bcftools query -l {input} > {output.sample_names} && "
+        "python scripts/shuffle_lines.py {output.sample_names} {config[random_seed]} > {output.sample_names_random} "
 
 
 rule create_vcf_with_subsample_of_individuals:

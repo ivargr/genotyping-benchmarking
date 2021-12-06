@@ -38,7 +38,7 @@ rule run_malva:
         mem_gb=100
     threads: 4
     shell:
-        "/usr/bin/time -v malva-geno -k 35 -r 43 -b 8 {input.ref} {input.variants} data/{wildcards.dataset}/{wildcards.reads}.kmc.out 1> {output.genotypes}.tmp 2> {output.benchmark} && "
+        "/usr/bin/time -v malva-geno -k 35 -r 43 -b 16 {input.ref} {input.variants} data/{wildcards.dataset}/{wildcards.reads}.kmc.out 1> {output.genotypes}.tmp 2> {output.benchmark} && "
         # convert nan quality to 0
         """awk '{{ $6 = ($6 == "nan" ? 0 : $6) }} 1' OFS="\\t" {output.genotypes}.tmp | bgzip -f -c > {output.genotypes}"""
         #"malva-geno call -k 35 -r 41 -b 16 {input.ref} {input.variants} {wildcards.reads}.kmc.out > {output.genotypes}"
