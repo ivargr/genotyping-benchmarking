@@ -203,6 +203,16 @@ rule make_variant_kmer_index:
         "graph_kmer_index make_reverse -f data/{wildcards.dataset}/variant_kmers -o {output.reverse_index}"
 
 
+rule make_minimal_variant_index:
+    input:
+        variant_kmers = "data/{dataset}/variant_kmers.npz",
+    output:
+        index = "data/{dataset}/kmer_index_only_variants_minimal.npz",
+    shell:
+        "graph_kmer_index make_from_flat -o {output.index} -f data/{wildcards.dataset}/variant_kmers.npz -m 104395303 -M True && "
+
+
+
 rule make_numpy_variants:
     input:
         "data/{dataset}/variants_no_genotypes.vcf"

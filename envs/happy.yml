@@ -1,5 +1,8 @@
 channels:
   - bioconda
+  - defaults
+  - conda-forge
 dependencies:
+  - python=2
   - hap.py
   - rtg-tools

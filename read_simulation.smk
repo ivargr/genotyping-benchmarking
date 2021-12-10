@@ -70,7 +70,8 @@ rule downsample_real_reads15x:
         reads="data/{dataset}/{truth_dataset}_real_reads_15x.fq",
     conda: "envs/prepare_data.yml"
     shell:
-        "zcat {input} | python scripts/downsample_fq.py 4 > {output.reads}"
+        #"zcat {input} | python scripts/downsample_fq.py 4 > {output.reads}"
+        "seqtk sample -2 -s{config[random_seed]} {input} 300000000 > {output.reads}"
 
 
 rule downsample_real_reads30x:

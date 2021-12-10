@@ -109,6 +109,16 @@ rule table2:
         "cp {input} {output}"
 
 
+rule table20:
+    input:
+        "table_dataset2-hg006_real_reads_15x-hg006.html"
+    #"table_dataset1_hg002_simulated_reads_15x-hg002.html"
+    output:
+        "table20.html"
+    shell:
+        "cp {input} {output}"
+
+
 rule supplementary_table:
     input:
         "table_dataset2-hg002_real_reads_30x-hg002.html"

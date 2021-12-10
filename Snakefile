@@ -20,7 +20,10 @@ ruleorder:
 
 rule all:
     input:
-        "data/simulated_dataset1/happy-seed1-usN800_seed1_simulated_reads_15x.extended.csv",
+        WEB_PATH + "table20.html",
+        #"data/dataset2/happy-hg006-usN2548_hg006_real_reads_15x.extended.csv",
+        #"WEB_PATH + "table1.html",
+        #"data/simulated_dataset1/happy-seed1-usN800_seed1_simulated_reads_15x.extended.csv",
         #WEB_PATH + "figure2.html"
         #"data/simulated_dataset1/happy-seed1-usN800_seed1_simulated_reads_15x.extended.csv",
         #WEB_PATH + "supplementary_table.html"
