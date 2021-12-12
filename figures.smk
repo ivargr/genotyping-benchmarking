@@ -127,6 +127,13 @@ rule supplementary_table:
     shell:
         "cp {input} {output}"
 
+rule supplementary_table2:
+    input:
+        "table_dataset2-hg006_real_reads_30x-hg006.html"
+    output:
+        "supplementary_table2.html"
+    shell:
+        "cp {input} {output}"
 
 rule table10:
     input:
