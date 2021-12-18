@@ -1,16 +1,29 @@
 import logging
 import math
+
+import plotly
+
 logging.basicConfig(level=logging.INFO)
 logging.info("Making tables")
 from tabulate import tabulate
 from happy_parser import get_accuracy_from_happy_file, get_run_time_from_benchmark_file, get_memory_from_benchmark_file
 import sys
+import plotly.express as px
 
 
 method_names = sys.argv[1]
 experiment = sys.argv[2]
 dataset = sys.argv[3]
 truth_dataset = sys.argv[4]
+out_base_name = sys.argv[5]
+
+
+name_mappings = {"bayestyper": "Bayestyper",
+                 "gatk": "GATK",
+                 "us": "KAGE",
+                 "pangenie": "PanGenie",
+                 "malva": "Malva",
+                 "graphtyper": "Graphtyper"}
 
 # Mapping from method name to jobs for that method
 method_jobs  = {
@@ -18,9 +31,9 @@ method_jobs  = {
     "gatk": ["bwamem", "gatk"],
     "graphtyper": ["bwamem", "graphtyper"],
     "malva": ["malva_kmc", "malva"],
-    "us": ["mapI1000", "usN2548"],
+    "us": ["mapI1000", "usN2548all"],
     "usN1000": ["mapI1000", "usN1000"],
-    "KAGE": ["mapI1000", "usN5488"],
+    "KAGE": ["mapI1000", "usN2548all"],
     "pangenie": ["pangenieN32"]
 }
 
@@ -36,6 +49,45 @@ def get_accuracy(method_name, only_callable_variants=""):
     logging.info("Accuracy: %s" % results)
     return results
 
+
+
+def make_plots():
+
+    accuracies = []
+    memories = []
+    run_times = []
+    for method in methods:
+        file_name = "data/" + dataset + "/happy-" + truth_dataset + "-" + method + "_" + experiment + ".extended.csv"
+        r = get_accuracy_from_happy_file(file_name)
+        accuracies.append(r["all"]["f1"])
+        memories.append(max([get_memory_from_benchmark_file(job_name, experiment, dataset) for job_name in method_jobs[method]]))
+        run_times.append(round(
+            sum([get_run_time_from_benchmark_file(job_name, experiment, dataset) for job_name in method_jobs[method]]), 2))
+
+    method_names = [name_mappings[name] for name in methods]
+    for plot_type, yaxis_name, data in zip(["f1", "memory", "runtime"],
+                                           ["F1 score", "Max memory (GB)", "Runtime (hours)"],
+                                           [accuracies, memories, run_times]):
+
+        fig = px.bar(x=method_names, y=data)
+        fig.update_layout(
+            yaxis=dict(
+                tickfont=dict(size=20),
+                showgrid=False
+            ),
+            xaxis=dict(showgrid=False),
+            font=dict(size=20),
+            xaxis_title="Method",
+            yaxis_title=yaxis_name,
+        )
+
+        fig.update_xaxes(showline=True, linewidth=1, linecolor='#666666')
+        fig.update_yaxes(showline=True, linewidth=2, linecolor='#666666')
+
+        fig.update_traces(marker_color='lightslategray')
+        if plot_type == "f1":
+            fig.update_yaxes(range=[0.8, 1])
+        plotly.offline.plot(fig, filename=plot_type + out_base_name, auto_open=False)
 
 
 
@@ -64,11 +116,8 @@ def make_table(only_callable_variants=""):
     table = []
 
     for method in methods:
-        method_name = method
-        if method_name == "us":
-            method_name = "KAGE"
         table.append(
-            [method_name.capitalize()] + accuracy[method] + [format_run_time(run_times[method]), str(round(memory_usage[method])) + " GB"]
+            [name_mappings[method]] + accuracy[method] + [format_run_time(run_times[method]), str(round(memory_usage[method])) + " GB"]
         )
 
     print(tabulate(table, table_headers, tablefmt="pretty"))
@@ -83,3 +132,5 @@ print("<h3>Only including callable variants</h3>")
 make_table("-only-callable")
 print("<h3>Long indels not included</h3>")
 make_table("-short-indels")
+
+make_plots()

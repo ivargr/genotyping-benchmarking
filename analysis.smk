@@ -106,19 +106,19 @@ rule run_happy:
         ref="data/{dataset}/ref.fa"
     output:
         output_file="data/{dataset}/happy-{truth_dataset}-{run}.extended.csv",
-        output_file_only_callable="data/{dataset}/happy-{truth_dataset}-{run}-only-callable.extended.csv",
-        output_file_short_indels="data/{dataset}/happy-{truth_dataset}-{run}-short-indels.extended.csv",
+        #output_file_only_callable="data/{dataset}/happy-{truth_dataset}-{run}-only-callable.extended.csv",
+        #output_file_short_indels="data/{dataset}/happy-{truth_dataset}-{run}-short-indels.extended.csv",
     conda:
         "envs/happy.yml"
     shell:
         """zcat {input.genotypes} | awk '{{ $6 = ($6 == "inf" ? 0 : $6) }} 1' OFS="\\t" | bgzip -c > {input.genotypes}.inf-replaced.vcf.gz && """
         "tabix -f -p vcf {input.genotypes}.inf-replaced.vcf.gz && "
         # skip long indels
-        "hap.py {input.truth_short_indels} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run}-short-indels -f {input.truth_regions_file} --no-decompose --engine=vcfeval && "
+        #"hap.py {input.truth_short_indels} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run}-short-indels -f {input.truth_regions_file} --no-decompose --engine=vcfeval && "
         # normal
-        "hap.py {input.truth_vcf} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run} -f {input.truth_regions_file} --no-decompose --engine=vcfeval && "
+        "hap.py {input.truth_vcf} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run} -f {input.truth_regions_file} --no-decompose --engine=vcfeval "
         # check against only truth variants that are in input variant set:
-        "hap.py {input.truth_vcf_only_callable} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run}-only-callable -f {input.truth_regions_file} --no-decompose --engine=vcfeval "
+        #"hap.py {input.truth_vcf_only_callable} {input.genotypes}.inf-replaced.vcf.gz --no-leftshift -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run}-only-callable -f {input.truth_regions_file} --no-decompose --engine=vcfeval "
         #"hap.py {input.truth_vcf} {input.genotypes}.inf-replaced.vcf.gz -r {input.ref} -o data/{wildcards.dataset}/happy-{wildcards.truth_dataset}-{wildcards.run} -f {input.truth_regions_file}"
 
 """

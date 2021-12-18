@@ -9,7 +9,7 @@ METHODS = ["us", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
 METHODS_JOINED = ",".join(METHODS)
 
 def figure2_file_names(wildcards):
-    return ",".join(["data/dataset1/happy-hg002-usN" + str(i) + "_hg002_simulated_reads_15x.extended.csv" for i in N_INDIVIDUALS] + \
+    return ",".join(["data/dataset1/happy-hg002-usN" + str(i) + "all_hg002_simulated_reads_15x.extended.csv" for i in N_INDIVIDUALS] + \
          ["data/dataset1/happy-hg002-pangenieN" + str(i) + "_hg002_simulated_reads_15x.extended.csv" for i in N_INDIVIDUALS_PANGENIE])
 
 def figure2_names(wildcards):
@@ -19,7 +19,7 @@ def figure2_names(wildcards):
 rule figure1:
     input:
         malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv",
-        kage="data/dataset1/happy-hg002-usN2058_hg002_simulated_reads_15x.extended.csv",
+        kage="data/dataset1/happy-hg002-usN2058all_hg002_simulated_reads_15x.extended.csv",
         naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure1.html"
@@ -30,7 +30,7 @@ rule figure1:
 
 rule figure2:
     input:
-        expand("data/dataset1/happy-hg002-usN{n_individuals}_hg002_simulated_reads_15x.extended.csv", n_individuals=N_INDIVIDUALS),
+        expand("data/dataset1/happy-hg002-usN{n_individuals}all_hg002_simulated_reads_15x.extended.csv", n_individuals=N_INDIVIDUALS),
         expand("data/dataset1/happy-hg002-pangenieN{n_individuals}_hg002_simulated_reads_15x.extended.csv", n_individuals=N_INDIVIDUALS_PANGENIE),
         malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv",
         naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x.extended.csv"
@@ -74,10 +74,13 @@ rule general_result_table:
     input:
         expand("data/{{dataset}}/happy-{{truth_dataset}}-{method}_{{experiment}}.extended.csv", method=METHODS)
     output:
-        "table_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html"
+        table="table_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html",
+        f1_figure="f1_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html",
+        mem_figure="memory_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html",
+        runtime_figure="runtime_{dataset,[a-z0-9_]+}-{experiment}-{truth_dataset,\w+}.html",
     conda: "envs/analysis.yml"
     shell:
-        "python scripts/make_result_table.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} > {output}"
+        "python scripts/make_result_table.py {METHODS_JOINED} {wildcards.experiment} {wildcards.dataset} {wildcards.truth_dataset} _{wildcards.dataset}-{wildcards.experiment}-{wildcards.truth_dataset}.html > {output.table}"
 
 rule simulated_data_result_table:
     input:

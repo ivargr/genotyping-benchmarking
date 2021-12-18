@@ -20,7 +20,18 @@ ruleorder:
 
 rule all:
     input:
-        WEB_PATH + "supplementary_table2.html"
+        #"data/dataset2/benchmarks/mapI1000_hg002_real_reads_15x.tsv"
+        WEB_PATH  + "table2.html"
+        #"data/dataset2/usN2548all_hg002_real_reads_15x.vcf.gz"
+        #WEB_PATH + "supplementary_table2.html",
+        #WEB_PATH + "table20.html",
+        #WEB_PATH + "table2.html",
+        #"data/dataset1/happy-hg002-usN2548all_hg002_simulated_reads_15x.extended.csv",
+        #"data/dataset2/happy-hg002-usN2548all_hg002_real_reads_15x.extended.csv",
+        #"data/dataset2/happy-hg006-usN85chinese_hg006_real_reads_15x.extended.csv",
+        #"data/dataset1/genotype_matrix_50chinese.npy"
+        #"data/dataset1/variants_50chinese.vcf.gz"
+        #WEB_PATH + "supplementary_table2.html"
         #WEB_PATH + "table20.html",
         #"data/dataset2/happy-hg006-usN2548_hg006_real_reads_15x.extended.csv",
         #"WEB_PATH + "table1.html",

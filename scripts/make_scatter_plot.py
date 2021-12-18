@@ -29,8 +29,16 @@ def plot_result_files(args):
 
     labels = []
 
-    color_mappings = {"pangenie": "red", "us": "blue", "kage": "blue", "malva": "cyan", "naivekage": "orange", "model": "blue", "graphtyper": "purple",
-                      "bayestyper": "green", "gatk": "gray"}
+    color_mappings = {"pangenie": "#8F3333",
+                      "us": "#456F9E",
+                      "kage": "#456F9E",
+                      "malva": "#142321",
+                      "naivekage": "#A8D4D4",
+                      "model": "#456F9E",
+                      "graphtyper": "purple",
+                      "bayestyper": "green",
+                      "gatk": "gray"}
+
     name_mappings = {"pangenie": "Pangenie", "us": "KAGE", "naivekage": "Naive KAGE", "kage": "KAGE",
                      "model": "Modelled kmer counts", "malva": "Malva", "graphtyper": "Graphtyper",
                      "bayestyper": "Bayestyper", "gatk": "GATK"}
@@ -39,8 +47,13 @@ def plot_result_files(args):
     fig = go.Figure(
         layout=go.Layout(
             xaxis=dict(showgrid=True, zeroline=False),
-        )
+                #plot_bgcolor='rgba(0, 0, 0, 0)',
+                #paper_bgcolor='rgba(235,242,247,1)'
     )
+    )
+
+    fig.update_xaxes(showline=True, linewidth=2, linecolor='#666666')
+    fig.update_yaxes(showline=True, linewidth=2, linecolor='#666666')
 
     if args.type == "f1":
         fig.update_layout(xaxis=dict(tickmode="linear"))
@@ -53,8 +66,10 @@ def plot_result_files(args):
             nticks=5,
             tickfont=dict(
                 size=20
-            )
-        ))
+            ),
+            showgrid=False
+        )
+    )
 
     if args.type == "f1":
         xaxis = "Number of individuals"
@@ -67,7 +82,8 @@ def plot_result_files(args):
         yaxis=dict(
             tickfont=dict(
                 size=20
-            )
+            ),
+            showgrid=False
         ),
         font=dict(size=20),
         xaxis_title=xaxis,
@@ -85,6 +101,8 @@ def plot_result_files(args):
     method_names = args.method_names.split(",")
     legends_shown = set()
 
+    max_y = 0
+    min_y = 1
     #for prefixes in args.results_file_prefixes.split(","):
     for file_name, method_name in zip(file_names, method_names):
         x = []
@@ -116,7 +134,7 @@ def plot_result_files(args):
         n_individuals = 2548
         if "N" in file_name:
             logging.info("File name: %s" % file_name)
-            n_individuals = int(file_name.split("-")[2].split("_")[0].split("N")[1])
+            n_individuals = int(file_name.split("-")[2].split("_")[0].split("N")[1].replace("all", ""))
 
         ticker_texts.append(ticker_text)
 
@@ -168,6 +186,15 @@ def plot_result_files(args):
                         ),
                       )
 
+
+        min_y = min([min_y, min(y)])
+        max_y = max([max_y, max(y)])
+
+    if args.type == "f1":
+        logging.info("Max y value is %.4f" % max_y)
+        fig.update_yaxes(range=[min_y - 0.01, max_y+0.01])
+    else:
+        fig.update_yaxes(range=[min_y-0.005, 1.0])
     save_to_file = args.out_file_name
     if save_to_file is not None:
         plotly.offline.plot(fig, filename=save_to_file, auto_open=False)

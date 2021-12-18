@@ -63,12 +63,12 @@ rule make_variant_to_nodes:
 rule make_genotype_matrix:
     input:
         graph="data/{dataset}/obgraph.npz",
-        vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz",
+        vcf="data/{dataset}/variants_{n_individuals}{subpopulation}.vcf.gz",
         vcf_no_genotypes="data/{dataset}/variants_no_genotypes.vcf"
     output:
-        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals,\d+}individuals.npy",
+        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals,\d+}{subpopulation,[a-z]+}.npy",
     threads: config["n_threads_data_quarter"]
-    benchmark: "data/{dataset}/benchmarks/make_genotype_matrix_{n_individuals}individuals.tsv"
+    benchmark: "data/{dataset}/benchmarks/make_genotype_matrix_{n_individuals}{subpopulation}.tsv"
     resources:
         mem_gb=230
     conda: "envs/kage.yml"
@@ -94,12 +94,12 @@ rule convert_genotype_matrix:
 
 rule make_transition_probabilities:
     input:
-        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}individuals.npy",
-        most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}individuals.npz",
+        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}{subpopulation}.npy",
+        most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}{subpopulation}.npz",
     output:
-        transition_probs = "data/{dataset}/transition_probs_{n_individuals}individuals.npy",
+        transition_probs = "data/{dataset}/transition_probs_{n_individuals,\d+}{subpopulation,[a-z]+}.npy",
     threads: config["n_threads_data_quarter"]
-    benchmark: "data/{dataset}/benchmarks/make_transition_probabilities_{n_individuals}individuals.tsv"
+    benchmark: "data/{dataset}/benchmarks/make_transition_probabilities_{n_individuals}{subpopulation}.tsv"
     resources: mem_gb=100
     conda: "envs/kage.yml"
     shell:
@@ -108,11 +108,11 @@ rule make_transition_probabilities:
 
 rule make_most_similar_variant_lookup:
     input:
-        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}individuals.npy",
+        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}{subpopulation}.npy",
     output:
-        most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}individuals.npz",
+        most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals,\d+}{subpopulation,[a-z]+}.npz",
     threads: config["n_threads_data_quarter"]
-    benchmark: "data/{dataset}/benchmarks/make_most_similar_variant_lookup_{n_individuals}individuals.tsv"
+    benchmark: "data/{dataset}/benchmarks/make_most_similar_variant_lookup_{n_individuals}{subpopulation}.tsv"
     resources: mem_gb=100
     conda: "envs/kage.yml"
     shell:
@@ -121,11 +121,11 @@ rule make_most_similar_variant_lookup:
 
 rule get_genotype_frequencies:
     input:
-        genotype_matrix = "data/{dataset}/genotype_matrix_{n_individuals}individuals.npy",
+        genotype_matrix = "data/{dataset}/genotype_matrix_{n_individuals}{subpopulation}.npy",
     output:
-        genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals}individuals.npz"
+        genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals,\d+}{subpopulation,[a-z]+}.npz"
     threads: config["n_threads_data"]
-    benchmark: "data/{dataset}/benchmarks/get_genotype_frequencies_{n_individuals}individuals.tsv"
+    benchmark: "data/{dataset}/benchmarks/get_genotype_frequencies_{n_individuals}{subpopulation}.tsv"
     resources:
         mem_gb=100
     conda: "envs/kage.yml"
@@ -168,17 +168,17 @@ rule sample_kmers_from_linear_reference:
 
 rule make_helper_model:
     input:
-        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}individuals.npy",
+        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}{subpopulation}.npy",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
         node_count_model="data/{dataset}/combination_model.npz",
     output:
-        helper_model="data/{dataset}/helper_model_{n_individuals}individuals.npy",
-        helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy"
+        helper_model="data/{dataset}/helper_model_{n_individuals,\d+}{subpopulation,[a-z]+}.npy",
+        helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals,\d+}{subpopulation,[a-z]+}_combo_matrix.npy"
     threads: config["n_threads_data"]
     resources: mem_gb=300
     conda: "envs/kage.yml"
     shell:
-        "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}individuals "
+        "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}{wildcards.subpopulation} "
         "-g {input.genotype_matrix} -w 100 -v {input.variant_to_nodes} -n {input.node_count_model} -t {config[n_threads_data]} "
         " "
 
@@ -203,14 +203,13 @@ rule make_variant_kmer_index:
         "graph_kmer_index make_reverse -f data/{wildcards.dataset}/variant_kmers -o {output.reverse_index}"
 
 
-rule make_minimal_variant_index:
+rule make_variant_kmer_index_with_reverse_complements:
     input:
         variant_kmers = "data/{dataset}/variant_kmers.npz",
     output:
-        index = "data/{dataset}/kmer_index_only_variants_minimal.npz",
+        index = "data/{dataset}/kmer_index_only_variants_with_reverse_complements.npz",
     shell:
-        "graph_kmer_index make_from_flat -o {output.index} -f data/{wildcards.dataset}/variant_kmers.npz -m 104395303 -M True && "
-
+        "graph_kmer_index make_from_flat -o {output.index} -f {input.variant_kmers} -m 200000033 -k {config[k]} -r True"
 
 
 rule make_numpy_variants:
@@ -311,11 +310,11 @@ rule make_index_bundle:
         numpy_variants="data/{dataset}/numpy_variants.npz",
         model="data/{dataset}/combination_model.npz",
         tricky_variants="data/{dataset}/tricky_variants.npy",
-        helper_variants="data/{dataset}/helper_model_{n_individuals}individuals.npy",
-        combo_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy",
-        kmer_index="data/{dataset}/kmer_index_only_variants.npz"
+        helper_variants="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
+        combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
+        kmer_index="data/{dataset}/kmer_index_only_variants_with_reverse_complements.npz"
     output:
-        "data/{dataset}/index_{n_individuals,\d+}individuals.npz"
+        "data/{dataset}/index_{n_individuals,\d+}{subpopulation,[a-z]+}.npz"
     conda: "envs/kage.yml"
     shell: 
         "kage make_index_bundle "

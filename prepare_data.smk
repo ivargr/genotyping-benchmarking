@@ -85,13 +85,25 @@ rule remove_genotype_info:
     output: "{sample}_no_genotypes.vcf"
     shell: "zcat {input} | cut -f 1-9 - > {output}"
 
+rule get_all_sample_names_from_vcf_chinese_subpopulation:
+    input:
+        "resources/sample_names_chinese.txt"
+    output:
+        sample_names="data/{dataset}/sample_names_chinese.txt",
+        sample_names_random="data/{dataset}/sample_names_random_order_chinese.txt"
+    conda: "envs/prepare_data.yml"
+    shell:
+        "cp {input} {output.sample_names} && "
+        "python scripts/shuffle_lines.py {output.sample_names} {config[random_seed]} > {output.sample_names_random} "
+
+
 
 rule get_all_sample_names_from_vcf:
     input:
         "data/{dataset}/variants.vcf.gz"
     output:
-        sample_names="data/{dataset}/sample_names.txt",
-        sample_names_random="data/{dataset}/sample_names_random_order.txt"
+        sample_names="data/{dataset}/sample_names_all.txt",
+        sample_names_random="data/{dataset}/sample_names_random_order_all.txt"
     conda: "envs/prepare_data.yml"
     shell:
         "bcftools query -l {input} > {output.sample_names} && "
@@ -101,33 +113,22 @@ rule get_all_sample_names_from_vcf:
 rule create_vcf_with_subsample_of_individuals:
     input:
         vcf="data/{dataset}/variants.vcf.gz",
-        sample_names_random="data/{dataset}/sample_names_random_order.txt"
+        sample_names_random="data/{dataset}/sample_names_random_order_{subpopulation}.txt"
     output:
-        subsamples="data/{dataset}/sample_names_random_order_{n_individuals}.txt",
-        vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz",
-        vcfindex="data/{dataset}/variants_{n_individuals}individuals.vcf.gz.tbi"
+        subsamples="data/{dataset}/sample_names_random_order_{n_individuals,\d+}{subpopulation,[a-z]+}.txt",
+        vcf="data/{dataset}/variants_{n_individuals,\d+}{subpopulation,[a-z]+}.vcf.gz",
+        vcfindex="data/{dataset}/variants_{n_individuals,\d+}{subpopulation,[a-z]+}.vcf.gz.tbi"
     conda: "envs/prepare_data.yml"
     shell:
         "head -n {wildcards.n_individuals} {input.sample_names_random} > {output.subsamples} && "
         "bcftools view -O z -S {output.subsamples} {input.vcf} > {output.vcf} && tabix -f -p vcf {output.vcf}"
 
 
-"""
-rule make_multiallelic_vcf_for_pangenie:
-    input:
-        vcf="data/{dataset}/variants_{n_individuals}individuals.vcf.gz"
-    output:
-        "data/{dataset}/variants_{n_individuals}individuals_multiallelic.vcf"
-    shell:
-        "bcftools norm -m +any {input.vcf} > {output}"
-"""
-
-
 rule uncompress_subsampled_vcf:
     input:
-        vcf="data/{dataset}/variants_{n_individuals,\d+}individuals.vcf.gz"
+        vcf="data/{dataset}/variants_{n_individuals,\d+}{subpopulation}.vcf.gz"
     output:
-        vcf="data/{dataset}/variants_{n_individuals,\d+}individuals.vcf"
+        vcf="data/{dataset}/variants_{n_individuals,\d+}{subpopulation}.vcf"
     shell:
         "zcat {input} > {output}"
 
