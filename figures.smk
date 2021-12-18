@@ -84,7 +84,7 @@ rule general_result_table:
 
 rule simulated_data_result_table:
     input:
-        "data/simulated_dataset2/happy-seed1-usN1000_seed1_simulated_reads_15x.extended.csv",
+        "data/simulated_dataset2/happy-seed1-usN1000all_seed1_simulated_reads_15x.extended.csv",
         "data/simulated_dataset2/happy-seed1-pangenie_seed1_simulated_reads_15x.extended.csv"
     output:
         "table_simulated_data.html"

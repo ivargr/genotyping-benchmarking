@@ -128,9 +128,9 @@ def make_table(only_callable_variants=""):
 
 
 make_table()
-print("<h3>Only including callable variants</h3>")
-make_table("-only-callable")
-print("<h3>Long indels not included</h3>")
-make_table("-short-indels")
+#print("<h3>Only including callable variants</h3>")
+#make_table("-only-callable")
+#print("<h3>Long indels not included</h3>")
+#make_table("-short-indels")
 
 make_plots()

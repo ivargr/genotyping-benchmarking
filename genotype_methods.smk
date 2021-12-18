@@ -47,7 +47,7 @@ rule run_pangenie:
     input:
         ref = "data/{dataset}/ref.fa",
         reads="data/{dataset}/{reads}.fa",
-        variants = "data/{dataset}/variants_{n_individuals}individuals_multiallelic.vcf",
+        variants = "data/{dataset}/variants_{n_individuals}all_multiallelic.vcf",
     output:
         genotypes="data/{dataset}/pangenieN{n_individuals,\d+}_{reads}.vcf",
         genotypes_gz="data/{dataset}/pangenieN{n_individuals,\d+}_{reads}.vcf.gz",
@@ -147,7 +147,7 @@ rule make_multiallelic_variants_for_bayestyper:
         ref= "data/{dataset}/ref.fa",
     output:
         "data/{dataset}/variants_no_genotypes_multiallelic.vcf"
-    conda: "envs/bwa.yml"
+    conda: "envs/bcftools.yml"
     shell:
         "bcftools norm -m +any -f {input.ref} {input.vcf} > {output}"
 
