@@ -2,6 +2,9 @@
 
 This repository contains a Snakemake-pipeline for benchmarking [KAGE](https://github.com/ivargr/kage) and other genotypers. Benchmarks can be done on both real (experimental) or simulated data. Running all the experiments will take 2-3 days using 16 CPU cores for each genotyper, as some of the genotypers require 10+ hours to run. However, running all genotypers on a small simulated dataset can be done in less than an hour.
 
+## Reproducing the experiments in the KAGE manuscript
+The branch v0.0.1 is a freeze of the code used to perform the experiments used in the KAGE manuscript. The Conda yml files in that branch will specify which versions of software were used. 
+
 ## Installation
 ### Step 1: Intall Snakemake and Conda
 Before you start, you will need both Snakemake (to run the benchmarking pipeline) and Conda (to get all the correct dependencies. [Follow the instructions](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) to install Snakemake if you don't have Snakemake allready.
