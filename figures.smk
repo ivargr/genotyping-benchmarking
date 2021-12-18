@@ -1,12 +1,10 @@
 
-N_INDIVIDUALS_PANGENIE = [5, 15, 30, 50, 100]  #, 40, 50, 100, 200, 2058]
-N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 200, 2058]
-#N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 550, 600, 650, 700, 800, 1000, 2548]  #, 40, 50, 100, 200, 2058]
+N_INDIVIDUALS_PANGENIE = [5, 15, 30, 50, 100]
+N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]
 
-METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
-#METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
-METHODS = ["us", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
+METHODS = ["us", "bayestyper", "malva", "graphtyper", "gatk"]  # pangenie can be added, but required separate installation
 METHODS_JOINED = ",".join(METHODS)
+
 
 def figure2_file_names(wildcards):
     return ",".join(["data/dataset1/happy-hg002-usN" + str(i) + "all_hg002_simulated_reads_15x.extended.csv" for i in N_INDIVIDUALS] + \
