@@ -2,6 +2,9 @@
 
 This repository contains a Snakemake-pipeline for benchmarking [KAGE](https://github.com/ivargr/kage) and other genotypers. Benchmarks can be done on both real (experimental) or simulated data. Running all the experiments will take 2-3 days using 16 CPU cores for each genotyper, as some of the genotypers require 10+ hours to run. However, running all genotypers on a small simulated dataset can be done in less than an hour.
 
+## Reproducing the experiments in the KAGE manuscript
+The branch v0.0.1 is a freeze of the code used to perform the experiments used in the KAGE manuscript. The Conda yml files in that branch will specify which versions of software were used. 
+
 ## Installation
 ### Step 1: Intall Snakemake and Conda
 Before you start, you will need both Snakemake (to run the benchmarking pipeline) and Conda (to get all the correct dependencies. [Follow the instructions](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) to install Snakemake if you don't have Snakemake allready.
@@ -31,12 +34,14 @@ If everything goes fine, a file `figure11.html` with the following result table 
 +------------+---------------+------------------+-----------+-------------+----------------+---------+---------+--------------+
 |            | Indels recall | Indels precision | Indels F1 | SNPs recall | SNPs precision | SNPs F1 | Runtime | Memory usage |
 +------------+---------------+------------------+-----------+-------------+----------------+---------+---------+--------------+
-|    Kage    |     0.846     |      0.846       |   0.846   |    0.737    |     0.875      |  0.800  |  0 min  |     5 GB     |
-| Bayestyper |     0.308     |      1.000       |   0.471   |    0.211    |     1.000      |  0.348  |  0 min  |     4 GB     |
-|   Malva    |     0.538     |      0.538       |   0.538   |    0.526    |     0.769      |  0.625  |  0 min  |    21 GB     |
-| Graphtyper |     0.077     |      1.000       |   0.143   |    0.211    |     0.200      |  0.205  |  0 min  |     0 GB     |
-|    Gatk    |     0.154     |      0.095       |   0.118   |    0.263    |     1.000      |  0.417  |  0 min  |     1 GB     |
+|    KAGE    |     0.692     |      0.692       |   0.692   |    0.842    |     0.889      |  0.865  |  0 min  |     3 GB     |
+|  PanGenie  |     0.769     |      0.714       |   0.741   |    0.789    |     0.714      |  0.750  |  2 min  |    48 GB     |
+| Bayestyper |     0.231     |      1.000       |   0.375   |    0.158    |     1.000      |  0.273  |  1 min  |     3 GB     |
+|   Malva    |     0.462     |      0.500       |   0.480   |    0.684    |     0.867      |  0.765  |  1 min  |    42 GB     |
+| Graphtyper |     0.077     |      1.000       |   0.143   |    0.158    |     0.167      |  0.162  |  0 min  |     0 GB     |
+|    GATK    |     0.154     |      0.125       |   0.138   |    0.263    |     0.714      |  0.385  |  0 min  |     2 GB     |
 +------------+---------------+------------------+-----------+-------------+----------------+---------+---------+--------------+
+
 ```
 
 
