@@ -152,18 +152,42 @@ rule sample_kmers_from_linear_reference:
         "data/{dataset}/ref_flat.fa"
     output:
         flat="data/{dataset}/linear_kmers.npz",
-        index="data/{dataset}/linear_kmer_index.npz"
     params:
         genome_size=get_dataset_genome_size
     resources:
-        mem_gb=240
-    threads: config["n_threads_data"]
+        mem_gb=300
+    threads: config["n_threads_data_quarter"]
     benchmark:
         "data/{dataset}/benchmarks/sample_kmers_from_linear_reference.tsv"
     conda: "envs/kage.yml"
     shell:
-        "graph_kmer_index make -s 1 -k {config[k]} -G {params.genome_size} -o data/{wildcards.dataset}/linear_kmers -R {input} -n ref -t {config[n_threads_data]} && "
-        "graph_kmer_index make_from_flat -o data/{wildcards.dataset}/linear_kmer_index -f {output.flat} -m 20000033"
+        "graph_kmer_index make -s 1 -k {config[k]} --include-reverse-complement True -G {params.genome_size} -o data/{wildcards.dataset}/linear_kmers -R {input} -n ref -t {config[n_threads_data_quarter]} "
+
+
+rule make_linear_reference_kmer_index:
+    input:
+        flat = "data/{dataset}/linear_kmers.npz",
+    output:
+        index="data/{dataset}/linear_kmer_index.npz"
+    shell:
+        "graph_kmer_index make_from_flat -o {output.index} -f {input.flat} -m 20000033"
+
+
+rule make_linear_reference_kmer_index_counter:
+    input:
+        flat="data/{dataset}/linear_kmers.npz",
+    output:
+        index="data/{dataset}/linear_kmers_counter.npz"
+    benchmark: "data/{dataset}/make_linear_reference_kmer_index_counter.tsv"
+    shell:
+        "graph_kmer_index count_kmers -f {input.flat} -o {output.index} --subsample-ratio 1"
+
+
+rule add_reverse_complements_to_kmers:
+    input: "data/{dataset}/{kmers}.npz"
+    output: "data/{dataset}/{kmers}_with_reverse_complements.npz"
+    conda: "envs/kage.yml"
+    shell: "graph_kmer_index add_reverse_complements -f {input} -k {config[k]} -o {output}"
 
 
 rule make_helper_model:
@@ -180,34 +204,67 @@ rule make_helper_model:
     shell:
         "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}{wildcards.subpopulation} "
         "-g {input.genotype_matrix} -w 100 -v {input.variant_to_nodes} -n {input.node_count_model} -t {config[n_threads_data]} "
-        " "
+
+rule make_critical_paths_index:
+    input:
+        graph = "data/{dataset}/obgraph.npz",
+    output:
+        index = "data/{dataset}/critical_paths2.npz",
+    benchmark: "data/{dataset}/make_critical_paths_index.tsv"
+    shell:
+        "graph_kmer_index find_critical_paths -g {input.graph} -k {config[k]} -o {output.index}"
+
+
+
+rule make_position_id_index:
+    input:
+        graph = "data/{dataset}/obgraph.npz",
+    output:
+        index = "data/{dataset}/position_id_index.npz",
+    benchmark: "data/{dataset}/make_position_id_index.tsv"
+    shell:
+        "obgraph make_position_id -g {input.graph} -o {output.index}"
+
 
 rule make_variant_kmer_index:
     input:
         graph="data/{dataset}/obgraph.npz",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
         vcf="data/{dataset}/variants_no_genotypes.vcf",
-        linear_kmer_index="data/{dataset}/linear_kmer_index.npz"
+        #linear_kmer_index="data/{dataset}/linear_kmer_index.npz",
+        linear_kmer_index="data/{dataset}/linear_kmers_counter.npz",
+        position_id_index="data/{dataset}/position_id_index.npz"
     output:
         variant_kmers="data/{dataset}/variant_kmers.npz",
         index="data/{dataset}/kmer_index_only_variants.npz",
-        reverse_index="data/{dataset}/reverse_variant_kmers.npz"
     benchmark:
         "data/{dataset}/benchmarks/make_variant_kmer_index.tsv"
-    resources: mem_gb=100
+    resources: mem_gb=400
     threads: config["n_threads_data"]
     conda: "envs/kage.yml"
     shell:
-        "graph_kmer_index make_unique_variant_kmers -g {input.graph} -V {input.variant_to_nodes} -k {config[k]} -o data/{wildcards.dataset}/variant_kmers -v {input.vcf} -t {config[n_threads_data]} -c 10000 --max-variant-nodes 5 -i {input.linear_kmer_index} && "
-        "graph_kmer_index make_from_flat -o {output.index} -f data/{wildcards.dataset}/variant_kmers.npz -m 200000033 && "
-        "graph_kmer_index make_reverse -f data/{wildcards.dataset}/variant_kmers -o {output.reverse_index}"
+        #"graph_kmer_index make_unique_variant_kmers -g {input.graph} -V {input.variant_to_nodes} -k {config[k]} -o data/{wildcards.dataset}/variant_kmers -v {input.vcf} -t  "
+        #"{config[n_threads_data]} -c 10000 --max-variant-nodes 5 -I {input.linear_kmer_index} && "
+        "graph_kmer_index make_unique_variant_kmers -g {input.graph} -V {input.variant_to_nodes} -k {config[k]} -o data/{wildcards.dataset}/variant_kmers -v {input.vcf} "
+        " -t {config[n_threads_data_quarter]} -c 20000 --max-variant-nodes 3 -I {input.linear_kmer_index} -p {input.position_id_index} -D True && "
+        "graph_kmer_index make_from_flat -o {output.index} -f data/{wildcards.dataset}/variant_kmers.npz -m 200000033  "
+
+
+rule make_reverse_variant_kmer_index:
+    input:
+        variant_kmers="data/{dataset}/variant_kmers.npz",
+    output:
+        reverse_index="data/{dataset}/reverse_variant_kmers.npz"
+    benchmark: "data/{dataset}/benchmarks/make_reverse_variant_kmer_index.tsv"
+    shell:
+        "graph_kmer_index make_reverse -f {input} -o {output}"
 
 
 rule make_variant_kmer_index_with_reverse_complements:
     input:
         variant_kmers = "data/{dataset}/variant_kmers.npz",
     output:
-        index = "data/{dataset}/kmer_index_only_variants_with_reverse_complements.npz",
+        index = "data/{dataset}/kmer_index_only_variants_with_revcomp.npz",
     shell:
         "graph_kmer_index make_from_flat -o {output.index} -f {input.variant_kmers} -m 200000033 -k {config[k]} -r True"
 
@@ -225,7 +282,10 @@ rule make_numpy_variants:
 rule sample_kmers_for_kmer_model:
     input:
         graph="data/{dataset}/obgraph.npz",
-        variant_kmers="data/{dataset}/variant_kmers.npz",
+        #variant_kmers="data/{dataset}/variant_kmers.npz",
+        variant_kmers="data/{dataset}/kmer_index_only_variants_with_revcomp.npz",
+        position_id_index="data/{dataset}/position_id_index.npz",
+        critical_paths="data/{dataset}/critical_paths2.npz"
     params:
         genome_size=get_dataset_genome_size
     output:
@@ -235,7 +295,9 @@ rule sample_kmers_for_kmer_model:
     threads: config["n_threads_data"]
     conda: "envs/kage.yml"
     shell:
-        "graph_kmer_index make -s 1 -k {config[k]} -G {params.genome_size} -o {output.flat_kmers} -g {input.graph} --max-frequency 100000 -v 4 -t {config[n_threads_data]} --only-save-one-node-per-kmer True --include-reverse-complement True --whitelist {input.variant_kmers}"
+        #"graph_kmer_index make -s 1 -k {config[k]} -G {params.genome_size} -o {output.flat_kmers} -g {input.graph} --max-frequency 100000 -v 5 -t {config[n_threads_data]} --only-save-one-node-per-kmer True --include-reverse-complement True --whitelist {input.variant_kmers}"
+        "graph_kmer_index index -k {config[k]} -g {input.graph} -t 25 --whitelist {input.variant_kmers} "
+        " -r True -p {input.position_id_index} -c {input.critical_paths} -o {output.flat_kmers} --max-variant-nodes 3"
 
 
 rule make_kmer_index:
@@ -267,7 +329,7 @@ rule make_kmer_count_model:
         mem_gb=120
     conda: "envs/kage.yml"
     shell:
-        "kage model -i {input.kmer_index} -g {input.variant_to_nodes} -r {input.reverse_variant_kmers} -m {params.n_nodes} -o {output.haplotype_model} -k {config[k]} -t {config[n_threads_data_quarter]} -V '' &&"
+        "kage model -i {input.kmer_index} -g {input.variant_to_nodes} -r {input.reverse_variant_kmers} -m {params.n_nodes} -o {output.haplotype_model} -k {config[k]} -t {config[n_threads_data_quarter]} -V v3 && "
         "kage make_genotype_model -v {input.variant_to_nodes} -n {output.haplotype_model} -o {output.genotype_model}"
 
 rule make_combination_model:
@@ -312,7 +374,7 @@ rule make_index_bundle:
         tricky_variants="data/{dataset}/tricky_variants.npy",
         helper_variants="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
         combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
-        kmer_index="data/{dataset}/kmer_index_only_variants_with_reverse_complements.npz"
+        kmer_index="data/{dataset}/kmer_index_only_variants_with_revcomp.npz"
     output:
         "data/{dataset}/index_{n_individuals,\d+}{subpopulation,[a-z]+}.npz"
     conda: "envs/kage.yml"

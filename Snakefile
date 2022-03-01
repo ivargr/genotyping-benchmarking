@@ -20,8 +20,15 @@ ruleorder:
 
 rule all:
     input:
+        "data/dataset2/happy-hg002-usN2548all_hg002_real_reads_15x.extended.csv"
+        #"data/dataset4/index_bundle.npz"
+        #"data/dataset2/flat_kmers_for_model.npz"
+        #"data/dataset3/happy-hg002-usN2548all_hg002_simulated_reads_15x.extended.csv"
+        #"data/dataset1/linear_kmers_with_reverse_complements.npz",
+        #"data/dataset1/linear_kmers_counter.npz",
+        #"data/dataset1/happy-hg002-usN2548all_hg002_simulated_reads_15x.extended.csv",
         #"data/dataset2/benchmarks/mapI1000_hg002_real_reads_15x.tsv"
-        WEB_PATH  + "table2.html"
+        #WEB_PATH  + "table2.html"
         #"data/dataset2/usN2548all_hg002_real_reads_15x.vcf.gz"
         #WEB_PATH + "supplementary_table2.html",
         #WEB_PATH + "table20.html",

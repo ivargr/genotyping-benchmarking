@@ -9,7 +9,7 @@ def get_dataset_n_nodes(wildcards):
 rule map:
     input:
         reads="data/{dataset}/{experiment}.fa",
-        kmer_index_only_variants="data/{dataset}/kmer_index_only_variants_with_reverse_complements.npz"
+        kmer_index_only_variants="data/{dataset}/kmer_index_only_variants_with_revcomp.npz"
     output:
         node_counts="data/{dataset}/{experiment}.I{max_index_frequency}.node_counts.npy",
         benchmark_report="data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
