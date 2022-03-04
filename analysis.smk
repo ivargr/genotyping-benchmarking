@@ -37,6 +37,7 @@ rule download_truth_file:
         "wget -O {output.regions_file} {params.regions_url} && sed -i 's/chr//g' {output.regions_file}"
 
 
+
 # whole region is in regions file
 rule create_simulated_regions_file:
     output:
@@ -63,18 +64,19 @@ rule create_simulated_truth_file:
 
 rule create_truth_file:
     input:
-        vcf="data/dataset{number}/original_{truth_dataset}.vcf.gz",
-        regions_file="data/dataset{number}/original_{truth_dataset}_regions.bed"
+        vcf="data/{dataset}/original_{truth_dataset}.vcf.gz",
+        regions_file="data/{dataset}/original_{truth_dataset}_regions.bed"
 
     output:
-        vcf="data/dataset{number,\d+}/truth_{truth_dataset}.vcf.gz",
-        regions_file="data/dataset{number,\d+}/truth_{truth_dataset}_regions.bed"
+        vcf="data/{dataset}/truth_{truth_dataset}.vcf.gz",
+        regions_file="data/{dataset}/truth_{truth_dataset}_regions.bed"
 
     params:
         regions = get_dataset_regions_comma_separated
     conda: "envs/prepare_data.yml"
     shell:
-        "bcftools view -O z --regions {params.regions} {input.vcf} > {output.vcf} && tabix -f -p vcf {output.vcf} && "
+        "bcftools view -O z --regions {params.regions} -f PASS --samples {wildcards.truth_dataset} {input.vcf} > {output.vcf} "
+        "&& tabix -f -p vcf {output.vcf} && "
         "python scripts/extract_regions_from_bed.py {input.regions_file} {params.regions} > {output.regions_file}"
 
 

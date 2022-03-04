@@ -29,6 +29,9 @@ chromosomes:
 thousand_genomes_vcf:
   "http://ivarg.ddns.net/variants.vcf.gz"
 
+sv_vcf:
+    "https://s3-us-west-1.amazonaws.com/illumina-polaris-v2.1-sv-truthset/all_merge.vcf.gz"
+
 analysis_regions:
   simulated_dataset0:
     region: "1:1-1000000"
@@ -104,6 +107,15 @@ analysis_regions:
     n_nodes: "30000000"
     vcf: "thousand_genomes_vcf"
 
+  svdataset1:
+    region: "1:1-5000000"
+    genome_size: "5000000"
+    chromosomes: "1"
+    simulation_chromosomes: "1"
+    n_nodes: "5000000"
+    skip_individuals: "NA12889"
+
+
 truth_datasets:
   hg002:
     vcf_url: "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/release/AshkenazimTrio/HG002_NA24385_son/NISTv3.3.2/GRCh38/HG002_GRCh38_GIAB_highconf_CG-Illfb-IllsentieonHC-Ion-10XsentieonHC-SOLIDgatkHC_CHROM1-22_v.3.3.2_highconf_triophased.vcf.gz"
@@ -126,3 +138,10 @@ truth_datasets:
     vcf_url: "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/release/ChineseTrio/HG006_NA24694_father/NISTv4.2.1/GRCh38/HG006_GRCh38_1_22_v4.2.1_benchmark.vcf.gz"
     regions_url: "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/release/ChineseTrio/HG006_NA24694_father/NISTv4.2.1/GRCh38/HG006_GRCh38_1_22_v4.2.1_benchmark.bed"
     reads_url: "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/ChineseTrio/HG006_NA24694-huCA017E_father/NA24694_Father_HiSeq100x/NA24694_Father_HiSeq100x_fastqs/NA24694_Justin-18411395/NA24694_combined-19068141/NA24694-combined_S1.bam"
+
+  NA12889:
+    vcf_url: "https://s3-us-west-1.amazonaws.com/illumina-polaris-v2.1-sv-truthset/all_merge.vcf.gz"
+    regions_url: "https://ivarg.ddns.net/grch38.bed"
+
+    
+    

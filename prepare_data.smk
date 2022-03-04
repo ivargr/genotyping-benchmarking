@@ -14,6 +14,16 @@ def get_n_individuals(wildcards):
 def get_n_variants(wildcards):
     return config["analysis_regions"]["simulated_dataset" + wildcards.number]["n_variants"]
 
+def get_dataset_skipped_individuals_comma_separated(wildcards):
+    return config["analysis_regions"]["svdataset" + wildcards.number]["skip_individuals"].replace(" ", ",")
+
+rule download_sv_vcf:
+    output:
+        vcf="data/sv-variants.vcf.gz",
+        index="data/sv-variants.vcf.gz.tbi"
+    shell:
+        "wget -O {output.vcf} {config[sv_vcf]} && wget -O {output.index} {config[sv_vcf]}.tbi "
+
 
 rule download_vcf:
     output:
@@ -54,6 +64,25 @@ rule prepare_dataset_vcf:
     shell:
         #"bcftools view -O z --regions {config[analysis_regions][{dataset}]} variants.vcf.gz > {output} && tabix -p vcf {output} "
         "bcftools view -O z --regions {params.regions} {input.vcf} > {output} && tabix -f -p vcf {output} "
+
+
+rule prepare_svdataset_vcf:
+    input:
+        vcf="data/sv-variants.vcf.gz"
+    output:
+        variants="data/svdataset{number,\d+}/variants.vcf.gz",
+        tmp="data/svdataset{number,\d+}/variants.vcf.gz.tmp"
+    params:
+        regions=get_dataset_regions_comma_separated,
+        skip_individuals=get_dataset_skipped_individuals_comma_separated
+    conda: "envs/prepare_data.yml"
+    shell:
+        #"bcftools view -O z --regions {config[analysis_regions][{dataset}]} variants.vcf.gz > {output} && tabix -p vcf {output} "
+        "zcat {input.vcf} | python3 scripts/filter_uncertain_sv.py | bgzip -c -f | "
+        "bcftools annotate --rename-chrs resources/chromosome-mappings.txt -O z - > {output.tmp} && tabix -p vcf -f {output.tmp} && "
+        "bcftools view -f PASS --samples ^{params.skip_individuals} -O z --regions {params.regions} {output.tmp}  | "
+        "bcftools +fill-tags -O z - -- -t AF "
+        " > {output.variants} && tabix -f -p vcf {output.variants} "
 
 rule prepare_dataset_reference:
     input:
