@@ -70,7 +70,7 @@ rule make_genotype_matrix:
     threads: config["n_threads_data_quarter"]
     benchmark: "data/{dataset}/benchmarks/make_genotype_matrix_{n_individuals}{subpopulation}.tsv"
     resources:
-        mem_gb=230
+        mem_gb=300
     conda: "envs/kage.yml"
     shell:
         #"n_individuals=$(zcat {input.vcf} | head -n 1000 | grep -i '#chrom' | python3 -c 'import sys; print(len(list(sys.stdin)[0].split())-9)') || true && "
@@ -203,7 +203,7 @@ rule make_helper_model:
     conda: "envs/kage.yml"
     shell:
         "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}{wildcards.subpopulation} "
-        "-g {input.genotype_matrix} -w 100 -v {input.variant_to_nodes} -n {input.node_count_model} -t {config[n_threads_data]} "
+        "-g {input.genotype_matrix} -w 100 -v {input.variant_to_nodes} -n {input.node_count_model} -t {config[n_threads_data_quarter]} "
 
 rule make_critical_paths_index:
     input:

@@ -11,6 +11,9 @@ include:
 include:
     "read_simulation.smk"
 
+include:
+    "paragraph.smk"
+
 ruleorder:
     downsample_real_reads15x > convert_fa_to_fq
 
@@ -20,10 +23,19 @@ ruleorder:
 
 rule all:
     input:
-        "data/svdataset1/NA12889_simulated_reads_15x.fa"
+        "data/svdataset1/debugging-usN150all-NA12889-NA12889_simulated_reads_15x.txt"
+        #WEB_PATH + "svtable1.html"
+        #"data/svdataset2/happy-NA12889-paragraph_NA12889_simulated_reads_15x.extended.csv"
+        #"data/svdataset1/paragraph_NA12889_simulated_reads_15x/genotypes.vcf.gz"
+        #"data/svdataset1/paragraph_samples_NA12889_simulated_reads_15x.txt"
+        #"data/svdataset2/happy-NA12889-usN150all_NA12889_simulated_reads_15x.extended.csv"
+        #"data/svdataset1/NA12889_simulated_reads_15x.fa"
+        #WEB_PATH + "table2.html"
+        #"data/svdataset1/happy-NA12889-usN150all_NA12889_simulated_reads_15x.extended.csv"
         #"data/svdataset1/variant_to_nodes.npz"
         #"data/svdataset1/variants.vcf.gz"
         #"data/sv-variants.vcf.gz"
+        #"data/dataset2/happy-hg002-usN2548all_hg002_real_reads_15x.extended.csv"
         #"data/dataset4/happy-hg002-usN2058all_hg002_simulated_reads_15x.extended.csv"
         #"data/dataset4/index_bundle.npz"
         #"data/dataset2/flat_kmers_for_model.npz"

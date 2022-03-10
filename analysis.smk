@@ -15,7 +15,7 @@ def get_truth_file_regions_url(wildcards):
 
 def get_dataset_regions_comma_separated(wildcards):
 
-    return config["analysis_regions"]["dataset" + wildcards.number]["region"].replace(" ", ",")
+    return config["analysis_regions"][wildcards.dataset]["region"].replace(" ", ",")
 
 def get_genome_size_simulated_data_set(wildcards):
     return config["analysis_regions"]["simulated_dataset" + wildcards.number]["genome_size"]
@@ -75,7 +75,8 @@ rule create_truth_file:
         regions = get_dataset_regions_comma_separated
     conda: "envs/prepare_data.yml"
     shell:
-        "bcftools view -O z --regions {params.regions} -f PASS --samples {wildcards.truth_dataset} {input.vcf} > {output.vcf} "
+        "bcftools view --regions {params.regions} -f PASS --samples {wildcards.truth_dataset} {input.vcf} |  "
+        "python3 scripts/filter_uncertain_sv.py | bgzip -c -f > {output.vcf} "
         "&& tabix -f -p vcf {output.vcf} && "
         "python scripts/extract_regions_from_bed.py {input.regions_file} {params.regions} > {output.regions_file}"
 
@@ -167,19 +168,19 @@ rule debug_genotyping:
         kmer_index="data/{dataset}/kmer_index_only_variants.npz",
         reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
         input_vcf="data/{dataset}/variants_no_genotypes.vcf",
-        genotyped_vcf="data/{dataset}/{method}N{n_individuals,\d+}_{experiment}.vcf.gz",
+        genotyped_vcf="data/{dataset}/{method}N{n_individuals,\d+}all_{experiment}.vcf.gz",
         truth_vcf="data/{dataset}/truth_{truth_id}.vcf.gz",
         truth_regions="data/{dataset}/truth_{truth_id}_regions.bed",
         node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
         model="data/{dataset}/combination_model.npz",
-        helper_variants="data/{dataset}/helper_model_{n_individuals}individuals.npy",
-        combination_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy",
-        genotype_probs="data/{dataset}/{method}N{n_individuals}_{experiment}.vcf.gz.tmp.probs.npy",
-        genotype_count_probs="data/{dataset}/{method}N{n_individuals}_{experiment}.vcf.gz.tmp.count_probs.npy",
-        pangenie="data/{dataset}/pangenieN32_{experiment}.vcf.gz"
+        helper_variants="data/{dataset}/helper_model_{n_individuals}all.npy",
+        combination_matrix="data/{dataset}/helper_model_{n_individuals}all_combo_matrix.npy",
+        genotype_probs="data/{dataset}/{method}N{n_individuals}all_{experiment}.vcf.gz.tmp.probs.npy",
+        genotype_count_probs="data/{dataset}/{method}N{n_individuals}all_{experiment}.vcf.gz.tmp.count_probs.npy",
+        #pangenie="data/{dataset}/pangenieN32_{experiment}.vcf.gz"
 
     output:
-        "data/{dataset}/debugging-{method}N{n_individuals,\d+}-{truth_id}-{experiment}.txt"
+        "data/{dataset}/debugging-{method}N{n_individuals,\d+}all-{truth_id}-{experiment}.txt"
 
     shell:
         "kage analyse_variants -g {input.variant_to_nodes} "
@@ -195,5 +196,5 @@ rule debug_genotyping:
         "-F {input.combination_matrix} "
         "-p {input.genotype_probs} "
         "-c {input.genotype_count_probs} "
-        "-a {input.pangenie} "
+        #"-a {input.pangenie} "
         "-t {input.truth_regions} > {output}"

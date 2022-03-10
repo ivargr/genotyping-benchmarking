@@ -21,9 +21,11 @@ out_base_name = sys.argv[5]
 name_mappings = {"bayestyper": "Bayestyper",
                  "gatk": "GATK",
                  "us": "KAGE",
+                 "usN150all": "KAGE 150",
                  "pangenie": "PanGenie",
                  "malva": "Malva",
-                 "graphtyper": "Graphtyper"}
+                 "graphtyper": "Graphtyper",
+                 "paragraph": "Paragraph"}
 
 # Mapping from method name to jobs for that method
 method_jobs  = {
@@ -33,8 +35,10 @@ method_jobs  = {
     "malva": ["malva_kmc", "malva"],
     "us": ["mapI1000", "usN2548all"],
     "usN1000": ["mapI1000", "usN1000"],
+    "usN150all": ["mapI1000", "usN150all"],
     "KAGE": ["mapI1000", "usN2548all"],
-    "pangenie": ["pangenieN32"]
+    "pangenie": ["pangenieN32"],
+    "paragraph": ["bwamem"]
 }
 
 methods = method_names.split(",")
@@ -44,7 +48,11 @@ def get_accuracy(method_name, only_callable_variants=""):
     file_name = "data/" + dataset + "/happy-" + truth_dataset + "-" + method_name + "_" + experiment + only_callable_variants + ".extended.csv"
     logging.info("Using file name %s" % file_name)
     r = get_accuracy_from_happy_file(file_name)
-    results = [r["indel"]["recall"], r["indel"]["precision"], r["indel"]["f1"], r["snp"]["recall"], r["snp"]["precision"], r["snp"]["f1"]]
+    if "snp" in r:
+        results = [r["indel"]["recall"], r["indel"]["precision"], r["indel"]["f1"], r["snp"]["recall"], r["snp"]["precision"], r["snp"]["f1"]]
+    else:
+        results = [r["indel"]["recall"], r["indel"]["precision"], r["indel"]["f1"], 0, 0, 0]
+
     results = ["%.3f" % float(r) for r in results]
     logging.info("Accuracy: %s" % results)
     return results

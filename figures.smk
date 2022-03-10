@@ -6,6 +6,8 @@ N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 
 METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
 #METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
 METHODS = ["us", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
+METHODS = ["usN150all", "paragraph"]
+
 METHODS_JOINED = ",".join(METHODS)
 
 def figure2_file_names(wildcards):
@@ -183,6 +185,14 @@ rule table4:
         "table4.html"
     shell:
         "cp {input} {output}"
+    
+rule svtable1:
+    input:
+        "table_svdataset2-NA12889_simulated_reads_15x-NA12889.html"
+    output:
+        "svtable1.html"
+    shell:
+        "cp {input} {output}"
 
 rule move_figures:
     input:
@@ -215,3 +225,4 @@ rule f1_figure_whole_genome:
         "f1_figure_whole_genome.html"
     shell:
         "cp {input} {output}"
+

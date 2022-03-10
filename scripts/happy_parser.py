@@ -5,7 +5,10 @@ def get_accuracy_from_happy_file(happy_csv_file_name):
     f = open(happy_csv_file_name)
     lines = f.readlines()
     lines = [line.split(",") for line in lines if line.startswith("SNP,*,*,ALL") or line.startswith("INDEL,*,*,ALL")]
-    assert len(lines) == 2
+    assert len(lines) == 2 or len(lines) == 1
+
+    if len(lines) == 1:
+        logging.warning("Only one line with results from happy. Are SNPs or INDELs missing?")
 
     query_tp_sum = 0
     query_fp_sum = 0

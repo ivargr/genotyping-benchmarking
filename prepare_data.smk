@@ -8,6 +8,9 @@ def get_dataset_regions(wildcards):
 def get_dataset_regions_comma_separated(wildcards):
     return config["analysis_regions"]["dataset" + wildcards.number]["region"].replace(" ", ",")
 
+def get_svdataset_regions_comma_separated(wildcards):
+    return config["analysis_regions"]["svdataset" + wildcards.number]["region"].replace(" ", ",")
+
 def get_n_individuals(wildcards):
     return config["analysis_regions"]["simulated_dataset" + wildcards.number]["n_individuals"]
 
@@ -71,17 +74,21 @@ rule prepare_svdataset_vcf:
         vcf="data/sv-variants.vcf.gz"
     output:
         variants="data/svdataset{number,\d+}/variants.vcf.gz",
-        tmp="data/svdataset{number,\d+}/variants.vcf.gz.tmp"
+        tmp1="data/svdataset{number,\d+}/variants.vcf.gz.tmp1",
+        tmp2="data/svdataset{number,\d+}/variants.vcf.gz.tmp2"
     params:
-        regions=get_dataset_regions_comma_separated,
+        regions=get_svdataset_regions_comma_separated,
         skip_individuals=get_dataset_skipped_individuals_comma_separated
     conda: "envs/prepare_data.yml"
     shell:
         #"bcftools view -O z --regions {config[analysis_regions][{dataset}]} variants.vcf.gz > {output} && tabix -p vcf {output} "
         "zcat {input.vcf} | python3 scripts/filter_uncertain_sv.py | bgzip -c -f | "
-        "bcftools annotate --rename-chrs resources/chromosome-mappings.txt -O z - > {output.tmp} && tabix -p vcf -f {output.tmp} && "
-        "bcftools view -f PASS --samples ^{params.skip_individuals} -O z --regions {params.regions} {output.tmp}  | "
-        "bcftools +fill-tags -O z - -- -t AF "
+        "bcftools annotate --rename-chrs resources/chromosome-mappings.txt -O z - > {output.tmp1} && tabix -p vcf -f {output.tmp1} && "
+        "bcftools view -f PASS --samples ^{params.skip_individuals} -O z {output.tmp1} > {output.tmp2} && tabix -p vcf -f {output.tmp2} && "
+        #"> {output.tmp} && tabix -p vcf -f {output.tmp} && "
+        #"bcftools view -f PASS --samples ^{params.skip_individuals} -O z {output.tmp} |"
+        "bcftools view --regions {params.regions} {output.tmp2} | "
+        "bcftools +fill-tags /dev/stdin -O z -- -t AF "
         " > {output.variants} && tabix -f -p vcf {output.variants} "
 
 rule prepare_dataset_reference:

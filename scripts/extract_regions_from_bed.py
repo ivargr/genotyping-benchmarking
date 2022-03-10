@@ -4,7 +4,7 @@ import sys
 
 
 f = open(sys.argv[1])
-regions = sys.argv[2];
+regions = sys.argv[2]
 
 n_skipped_lines = 0
 
@@ -37,7 +37,15 @@ else:
             n_skipped_lines += 1
             continue
 
-        if start < region_start or end > region_end:
+        if start < region_start:
+            if end > region_end:
+                print(chromosome + "\t" + str(region_start) + "\t" + str(region_end))
+            elif end > region_start:
+                print(chromosome + "\t" + str(region_start) + "\t" + str(end))
+            else:
+                n_skipped_lines += 1
+        elif end > region_end:
+            # todo fix
             n_skipped_lines += 1
             continue
 

@@ -43,9 +43,9 @@ rule genotype:
         #tricky_variants="data/{dataset}/tricky_variants.npy",
         index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}.npz"
     output:
-        genotypes="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[a-z0-9_]+}.vcf.gz",
-        probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[a-z0-9_]+}.vcf.gz.tmp.probs.npy",
-        count_probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[a-z0-9_]+}.vcf.gz.tmp.count_probs.npy",
+        genotypes="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz",
+        probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz.tmp.probs.npy",
+        count_probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz.tmp.count_probs.npy",
         benchmark_report="data/{dataset}/benchmarks/usN{n_individuals}{subpopulation,[a-z]+}_{experiment}.tsv"
     threads:
         config["n_threads"]
