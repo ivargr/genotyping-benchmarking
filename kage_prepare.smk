@@ -43,8 +43,7 @@ rule merge_chromosome_graphs:
     conda: "envs/kage.yml"
     benchmark: "data/{dataset}/benchmarks/merge_chromosome_graphs.tsv"
     shell:
-        "obgraph merge_graphs -o {output} -g {input} &&"
-        "obgraph set_numeric_node_sequences -g {output}"
+        "obgraph merge_graphs -o {output} -g {input}"
 
 
 rule make_variant_to_nodes:
@@ -60,9 +59,24 @@ rule make_variant_to_nodes:
         "obgraph make_variant_to_nodes -g {input.graph} -v {input.vcf} -o {output}"
 
 
+rule make_haplotype_matrix:
+    input:
+        vcf="data/{dataset}/variants_{n_individuals}{subpopulation}.vcf.gz",
+        vcf_no_genotypes="data/{dataset}/variants_no_genotypes.vcf"
+    output:
+        haplotype_matrix="data/{dataset}/haplotype_matrix_{n_individuals,\d+}{subpopulation,[a-z]+}.npy",
+    threads: config["n_threads_data_quarter"]
+    benchmark: "data/{dataset}/benchmarks/make_haplotype_matrix_{n_individuals}{subpopulation}.tsv"
+    resources:
+        mem_gb=300
+    conda: "envs/kage.yml"
+    shell:
+        "n_variants=$(grep -v '#' {input.vcf_no_genotypes} | wc -l) || true && "
+        "obgraph make_haplotype_matrix  -v {input.vcf} -o {output.haplotype_matrix} -n {wildcards.n_individuals} -m $n_variants -t {config[n_threads_data]}"
+
+
 rule make_genotype_matrix:
     input:
-        graph="data/{dataset}/obgraph.npz",
         vcf="data/{dataset}/variants_{n_individuals}{subpopulation}.vcf.gz",
         vcf_no_genotypes="data/{dataset}/variants_no_genotypes.vcf"
     output:
@@ -75,7 +89,18 @@ rule make_genotype_matrix:
     shell:
         #"n_individuals=$(zcat {input.vcf} | head -n 1000 | grep -i '#chrom' | python3 -c 'import sys; print(len(list(sys.stdin)[0].split())-9)') || true && "
         "n_variants=$(grep -v '#' {input.vcf_no_genotypes} | wc -l) || true && "
-        "obgraph make_genotype_matrix -g {input.graph} -v {input.vcf} -o {output.genotype_matrix} -n {wildcards.n_individuals} -m $n_variants -t {config[n_threads_data]}"
+        "obgraph make_genotype_matrix -v {input.vcf} -o {output.genotype_matrix} -n {wildcards.n_individuals} -m $n_variants -t {config[n_threads_data]}"
+
+
+rule make_haplotype_to_nodes:
+    input:
+        graph="data/{dataset}/obgraph.npz",
+        vcf = "data/{dataset}/variants_{n_individuals}{subpopulation}.vcf.gz",
+    output:
+        "data/{dataset}/haplotype_to_nodes_{n_individuals,\d+}{subpopulation}.npz"
+    shell:
+        "n_haplotypes=$((2*{wildcards.n_individuals})) && "
+        "obgraph make_haplotype_to_nodes -g {input.graph} -v {input.vcf} -n 5 -o {output}"
 
 
 """

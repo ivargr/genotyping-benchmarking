@@ -15,7 +15,7 @@ def get_truth_file_regions_url(wildcards):
 
 def get_dataset_regions_comma_separated(wildcards):
 
-    return config["analysis_regions"][wildcards.dataset]["region"].replace(" ", ",")
+    return config["analysis_regions"]["dataset" + wildcards.n]["region"].replace(" ", ",")
 
 def get_genome_size_simulated_data_set(wildcards):
     return config["analysis_regions"]["simulated_dataset" + wildcards.number]["genome_size"]
@@ -64,12 +64,12 @@ rule create_simulated_truth_file:
 
 rule create_truth_file:
     input:
-        vcf="data/{dataset}/original_{truth_dataset}.vcf.gz",
-        regions_file="data/{dataset}/original_{truth_dataset}_regions.bed"
+        vcf="data/dataset{n}/original_{truth_dataset}.vcf.gz",
+        regions_file="data/dataset{n}/original_{truth_dataset}_regions.bed"
 
     output:
-        vcf="data/{dataset}/truth_{truth_dataset}.vcf.gz",
-        regions_file="data/{dataset}/truth_{truth_dataset}_regions.bed"
+        vcf="data/dataset{n}/truth_{truth_dataset}.vcf.gz",
+        regions_file="data/dataset{n}/truth_{truth_dataset}_regions.bed"
 
     params:
         regions = get_dataset_regions_comma_separated
