@@ -23,7 +23,10 @@ ruleorder:
 
 rule all:
     input:
-        "data/simulated_dataset1/happy-seed1-usN800all_seed1_simulated_reads_15x.extended.csv",
+        "data/dataset4/happy-hg002-usN2058all_hg002_simulated_reads_15x.extended.csv"
+        #"data/dataset1/happy-hg002-usN2548all_hg002_simulated_reads_15x.extended.csv"
+        #"data/simulated_dataset1/obgraph.npz",
+        #"data/simulated_dataset1/happy-seed1-usN800all_seed1_simulated_reads_15x.extended.csv",
         #"data/dataset1/haplotype_to_nodes_2548all.npz"
         #"data/dataset1/haplotype_matrix_2548all.npy"
         #"data/svdataset1/debugging-usN150all-NA12889-NA12889_simulated_reads_15x.txt"
