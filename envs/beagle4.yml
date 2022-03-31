@@ -1,0 +1,4 @@
+channels:
+  - main
+dependencies:
+  - beagle=4.1

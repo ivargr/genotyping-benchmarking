@@ -111,6 +111,15 @@ analysis_regions:
     n_nodes: "30000000"
     vcf: "thousand_genomes_vcf"
 
+  dataset5:
+    region: "1:1-5000000"
+    genome_size: "5000000"
+    chromosomes: "1"
+    simulation_chromosomes: "1"
+    n_nodes: "5000000"
+    vcf: "thousand_genomes_vcf"
+    only_snps: True
+
   svdataset1:
     region: "1:1-5000000"
     genome_size: "5000000"

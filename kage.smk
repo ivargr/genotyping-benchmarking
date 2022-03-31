@@ -66,7 +66,7 @@ rule genotype:
         #"-x {input.tricky_variants} "
         "-C CombinationModelGenotyper " 
         "-t {config[n_threads]} "
-        "-q 80 " 
+        "-q 0.5 " 
         "--average-coverage {params.read_coverage} "
         "-o {output.genotypes}.tmp " 
         "--sample-name-output {params.sample_name} 2> {output.benchmark_report} "

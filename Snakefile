@@ -14,6 +14,9 @@ include:
 include:
     "paragraph.smk"
 
+include:
+    "low_coverage_genotyping.smk"
+
 ruleorder:
     downsample_real_reads15x > convert_fa_to_fq
 
@@ -23,7 +26,12 @@ ruleorder:
 
 rule all:
     input:
-        "data/dataset4/happy-hg002-usN2058all_hg002_simulated_reads_15x.extended.csv"
+        "data/dataset3/happy-hg002-usN2548all_hg002_simulated_reads_15x.extended.csv"
+        #"data/dataset3/usN2548all_hg002_simulated_reads_15x.vcf.gz"
+        #"data/dataset3/obgraph.npz"
+        #"data/dataset5/gatkRefined_hg002_simulated_reads_4x.vcf.gz"
+        #"data/dataset5/variants.map"
+        #"data/dataset4/happy-hg002-usN2058all_hg002_simulated_reads_15x.extended.csv"
         #"data/dataset1/happy-hg002-usN2548all_hg002_simulated_reads_15x.extended.csv"
         #"data/simulated_dataset1/obgraph.npz",
         #"data/simulated_dataset1/happy-seed1-usN800all_seed1_simulated_reads_15x.extended.csv",

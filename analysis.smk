@@ -21,6 +21,11 @@ def get_genome_size_simulated_data_set(wildcards):
     return config["analysis_regions"]["simulated_dataset" + wildcards.number]["genome_size"]
 
 
+# hack to make bcftools --samples case inssensitive by providing the sample in upper and lower case
+def samples_list(wildcards):
+    return wildcards.truth_dataset + "," + wildcards.truth_dataset.upper()
+
+
 rule download_truth_file:
     output:
         vcf="data/{dataset}/original_{truth_dataset}.vcf.gz",
@@ -70,12 +75,12 @@ rule create_truth_file:
     output:
         vcf="data/dataset{n}/truth_{truth_dataset}.vcf.gz",
         regions_file="data/dataset{n}/truth_{truth_dataset}_regions.bed"
-
     params:
-        regions = get_dataset_regions_comma_separated
+        regions = get_dataset_regions_comma_separated,
+        samples=samples_list
     conda: "envs/prepare_data.yml"
     shell:
-        "bcftools view --regions {params.regions} -f PASS --samples {wildcards.truth_dataset} {input.vcf} |  "
+        "bcftools view --regions {params.regions} -f PASS --force-samples --samples {params.samples} {input.vcf} |  "
         "python3 scripts/filter_uncertain_sv.py | bgzip -c -f > {output.vcf} "
         "&& tabix -f -p vcf {output.vcf} && "
         "python scripts/extract_regions_from_bed.py {input.regions_file} {params.regions} > {output.regions_file}"

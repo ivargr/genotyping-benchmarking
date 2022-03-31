@@ -8,6 +8,11 @@ def get_dataset_regions(wildcards):
 def get_dataset_regions_comma_separated(wildcards):
     return config["analysis_regions"]["dataset" + wildcards.number]["region"].replace(" ", ",")
 
+def only_snps_command(wildcards):
+    if "only_snps" in config["analysis_regions"]["dataset" + wildcards.number]:
+        return " | bcftools filter -i 'TYPE=\"snp\"' /dev/stdin -O z"
+    return ""
+
 def get_svdataset_regions_comma_separated(wildcards):
     return config["analysis_regions"]["svdataset" + wildcards.number]["region"].replace(" ", ",")
 
@@ -62,11 +67,12 @@ rule prepare_dataset_vcf:
     output:
         "data/dataset{number,\d+}/variants.vcf.gz"
     params:
-        regions=get_dataset_regions_comma_separated
+        regions=get_dataset_regions_comma_separated,
+        only_snps_command=only_snps_command
     conda: "envs/prepare_data.yml"
     shell:
         #"bcftools view -O z --regions {config[analysis_regions][{dataset}]} variants.vcf.gz > {output} && tabix -p vcf {output} "
-        "bcftools view -O z --regions {params.regions} {input.vcf} > {output} && tabix -f -p vcf {output} "
+        "bcftools view -O z --regions {params.regions} {input.vcf} {params.only_snps_command} > {output} && tabix -f -p vcf {output} "
 
 
 rule prepare_svdataset_vcf:
