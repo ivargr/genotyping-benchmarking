@@ -18,7 +18,7 @@ def get_chromosome_graph_names(wildcards):
 def get_dataset_genome_size(wildcards):
     return config["analysis_regions"][wildcards.dataset]["genome_size"]
 
-
+"""
 rule make_chromosome_graph:
     input:
         vcf = "data/{dataset}/variants.vcf.gz",
@@ -44,6 +44,7 @@ rule merge_chromosome_graphs:
     benchmark: "data/{dataset}/benchmarks/merge_chromosome_graphs.tsv"
     shell:
         "obgraph merge_graphs -o {output} -g {input}"
+"""
 
 
 rule make_variant_to_nodes:

@@ -15,6 +15,9 @@ include:
     "paragraph.smk"
 
 include:
+    "vg.smk"
+
+include:
     "low_coverage_genotyping.smk"
 
 ruleorder:
@@ -26,7 +29,8 @@ ruleorder:
 
 rule all:
     input:
-        "data/dataset3/happy-hg002-usN2548all_hg002_simulated_reads_15x.extended.csv"
+        #"data/dataset1/obgraph.npz"
+        "data/dataset1/happy-hg002-usN2548all_hg002_simulated_reads_15x.extended.csv"
         #"data/dataset3/usN2548all_hg002_simulated_reads_15x.vcf.gz"
         #"data/dataset3/obgraph.npz"
         #"data/dataset5/gatkRefined_hg002_simulated_reads_4x.vcf.gz"
