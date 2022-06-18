@@ -125,7 +125,7 @@ rule make_flat_reference:
     #shell: "grep -v '^>' {input} > {output.fasta}.tmp && echo '>ref' > {output.fasta} && cat {output.fasta}.tmp >> {output.fasta} && samtools faidx {output.fasta}"
     conda: "envs/prepare_data.yml"
     shell:
-        r"""python3 scripts/make_flat_reference.py {input} | sed -e 's/.\{{80\}}/&\n/g' > {output.fasta} && samtools faidx {output.fasta}"""
+        r"""python3 scripts/make_flat_reference.py {input} | fold -w 80 > {output.fasta} && samtools faidx {output.fasta}"""
 
 
 rule remove_genotype_info:

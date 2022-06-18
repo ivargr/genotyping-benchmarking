@@ -99,6 +99,8 @@ rule make_genotype_txt_matrix:
         genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals,\d+}{subpopulation,[a-z]+}.txt.gz",
     threads: 1
     benchmark: "data/{dataset}/benchmarks/make_genotype_txt_matrix_{n_individuals}{subpopulation}.tsv"
+    conda:
+        "envs/prepare_data.yml"
     shell:
         'gunzip -c {input} | grep -v "^#" | cut -f 10- | tr -d "|" | tr -d "\n" | tr -d "\t" | pigz -c > {output} '
 
@@ -147,7 +149,7 @@ rule make_count_model:
         "kage sample_node_counts_from_population -g {input.graph} "
         "-H {input.haplotype_to_nodes} "
         #"-H data/dataset1/disc_backed_haplotype_to_nodes "
-        "-i {input.counter_index} -o {output} -t 35 --max-count 15"
+        "-i {input.counter_index} -o {output} -t 25 --max-count 15"
 
 
 rule make_haplotype_to_nodes:
@@ -271,6 +273,8 @@ rule make_linear_reference_kmer_index:
         flat = "data/{dataset}/linear_kmers.npz",
     output:
         index="data/{dataset}/linear_kmer_index.npz"
+    conda:
+        "envs/kage.yml"
     shell:
         "graph_kmer_index make_from_flat -o {output.index} -f {input.flat} -m 20000033"
 
@@ -281,6 +285,8 @@ rule make_linear_reference_kmer_index_counter:
     output:
         index="data/{dataset}/linear_kmers_counter.npz"
     benchmark: "data/{dataset}/make_linear_reference_kmer_index_counter.tsv"
+    conda:
+        "envs/kage.yml"
     shell:
         "graph_kmer_index count_kmers -f {input.flat} -o {output.index} --subsample-ratio 1"
 

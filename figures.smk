@@ -6,7 +6,7 @@ N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 
 METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
 #METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
 METHODS = ["us", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
-METHODS = ["usN150all", "paragraph"]
+#METHODS = ["usN150all", "paragraph"]
 
 METHODS_JOINED = ",".join(METHODS)
 
