@@ -8,5 +8,5 @@ dependencies:
   - pip:
       - kage-genotyper==0.0.23
       - kmer_mapper==0.0.19
-      - obgraph==0.0.21
+      - obgraph==0.0.23
   - tabix
