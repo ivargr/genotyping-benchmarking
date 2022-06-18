@@ -32,6 +32,7 @@ def plot_result_files(args):
     color_mappings = {"pangenie": "#8F3333",
                       "us": "#456F9E",
                       "kage": "#456F9E",
+                      "kageNoHelperModel": "#456F9E",
                       "malva": "#142321",
                       "naivekage": "#A8D4D4",
                       "model": "#456F9E",
@@ -39,7 +40,7 @@ def plot_result_files(args):
                       "bayestyper": "green",
                       "gatk": "gray"}
 
-    name_mappings = {"pangenie": "Pangenie", "us": "KAGE", "naivekage": "Naive KAGE", "kage": "KAGE",
+    name_mappings = {"pangenie": "Pangenie", "us": "KAGE", "naivekage": "Naive KAGE", "kageNoHelperModel": "KAGE", "kage": "KAGE",
                      "model": "Modelled kmer counts", "malva": "Malva", "graphtyper": "Graphtyper",
                      "bayestyper": "Bayestyper", "gatk": "GATK"}
 

@@ -21,13 +21,13 @@ def figure2_names(wildcards):
 rule figure1:
     input:
         malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv",
-        kage="data/dataset1/happy-hg002-kageNoHelperModelN2058all_hg002_simulated_reads_15x.extended.csv",
-        naivekage="data/dataset1/happy-hg002-naivekageN2548all_hg002_simulated_reads_15x.extended.csv"
+        kage="data/dataset1/happy-hg002-kageNoHelperModelN250all_hg002_simulated_reads_15x.extended.csv",
+        naivekage="data/dataset1/happy-hg002-naivekageN250all_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure1.html"
     conda: "envs/analysis.yml"
     shell:
-        "python scripts/make_scatter_plot.py plot_results_files -f {input.malva},{input.kage},{input.naivekage} -n malva,kage,naivekage -o {output}"
+        "python scripts/make_scatter_plot.py plot_results_files -f {input.malva},{input.kage},{input.naivekage} -n malva,kageNoHelperModel,naivekage -o {output}"
 
 
 rule figure2:

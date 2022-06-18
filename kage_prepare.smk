@@ -319,6 +319,7 @@ rule make_critical_paths_index:
     output:
         index = "data/{dataset}/critical_paths2.npz",
     benchmark: "data/{dataset}/make_critical_paths_index.tsv"
+    conda: "envs/kage.yml"
     shell:
         "graph_kmer_index find_critical_paths -g {input.graph} -k {config[k]} -o {output.index}"
 
@@ -330,6 +331,7 @@ rule make_position_id_index:
     output:
         index = "data/{dataset}/position_id_index.npz",
     benchmark: "data/{dataset}/make_position_id_index.tsv"
+    conda: "envs/kage.yml"
     shell:
         "obgraph make_position_id -g {input.graph} -o {output.index}"
 
@@ -393,6 +395,7 @@ rule make_reverse_variant_kmer_index:
     output:
         reverse_index="data/{dataset}/reverse_variant_kmers.npz"
     benchmark: "data/{dataset}/benchmarks/make_reverse_variant_kmer_index.tsv"
+    conda: "envs/kage.yml"
     shell:
         "graph_kmer_index make_reverse -f {input} -o {output}"
 
@@ -402,6 +405,7 @@ rule make_variant_kmer_index_with_reverse_complements:
         variant_kmers = "data/{dataset}/variant_kmers.npz",
     output:
         index = "data/{dataset}/kmer_index_only_variants_with_revcomp.npz",
+    conda: "envs/kage.yml"
     shell:
         "graph_kmer_index make_from_flat -o {output.index} -f {input.variant_kmers} -m 200000033 -k {config[k]} -r True"
 

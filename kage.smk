@@ -117,48 +117,6 @@ rule genotype_without_helper_model:
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
 
 
-rule genotype_with_old_helper_model:
-    input:
-        node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
-        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        variants="data/{dataset}/variants_no_genotypes.vcf",
-        model="data/{dataset}/combination_model.npz",
-        genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals}{subpopulation}.npz",
-        most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}{subpopulation}.npz",
-        transition_probs="data/{dataset}/transition_probs_{n_individuals}{subpopulation}.npy",
-        #helper_model="data/{dataset}/helper_model_{n_individuals}individuals.npy",
-        #helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}individuals_combo_matrix.npy",
-        tricky_variants="data/{dataset}/tricky_variants.npy",
-    output:
-        genotypes="data/{dataset}/kageoldN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[a-z0-9_]+}.vcf.gz",
-        probs="data/{dataset}/kageoldN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[a-z0-9_]+}.vcf.gz.tmp.probs.npy"
-    threads:
-        4
-    benchmark:
-        "data/{dataset}/benchmarks/usN{n_individuals}{subpopulation,[a-z]+}_{experiment}.tsv"
-    params:
-        sample_name=get_sample_name_from_experiment,
-        read_coverage=get_read_coverage_from_experiment
-    conda: "envs/kage.yml"
-    shell:
-        "kage genotype -c {input.node_counts} "
-        "-g {input.variant_to_nodes} "
-        "-v {input.variants} "
-        "-A {input.model} "
-        "-G {input.genotype_frequencies} " 
-        "-M {input.most_similar_variant_lookup} " 
-        "-o {output.genotypes}.tmp "
-        "-C NumpyGenotyper  "
-        "-t 1 -z 2000000000000000 "
-        "-q 80 "
-        "-p {input.transition_probs} " 
-        "--average-coverage 3.0 "
-        "-x {input.tricky_variants} "
-        "--sample-name-output {params.sample_name} "
-        "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
-
-
-
 # hack to run genotyper with 2548 individuals if none are specified
 rule genotype_wrapper:
     input:
