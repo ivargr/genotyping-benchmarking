@@ -16,3 +16,4 @@ dependencies:
   - sed
   - bedtools==2.26.0
   - seqtk
+  - pigz

@@ -21,7 +21,7 @@ rule run_paragraph:
         genotypes="data/{dataset}/paragraph_{sample_id,\w+}_{read_info}/genotypes.vcf.gz"
     shell:
         """
-        python3 /home/ivar/dev/paragraph/bin/multigrmpy.py -i {input.variants} -m {input.sample_file} -r {input.ref} -o data/{wildcards.dataset}/paragraph_{wildcards.sample_id}_{wildcards.read_info}/ -t {config[n_threads]}
+        python3 /home/ivargry/dev/paragraph2/bin/multigrmpy.py -i {input.variants} -m {input.sample_file} -r {input.ref} -o data/{wildcards.dataset}/paragraph_{wildcards.sample_id}_{wildcards.read_info}/ -t {config[n_threads]}
         """
 
 

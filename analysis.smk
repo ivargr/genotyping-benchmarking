@@ -23,7 +23,10 @@ def get_genome_size_simulated_data_set(wildcards):
 
 # hack to make bcftools --samples case inssensitive by providing the sample in upper and lower case
 def samples_list(wildcards):
-    return wildcards.truth_dataset + "," + wildcards.truth_dataset.upper()
+    return wildcards.truth_dataset.lower() + "," + wildcards.truth_dataset.upper()
+
+ruleorder:
+    debug_genotyping_mapped_reads > debug_genotyping
 
 
 rule download_truth_file:
@@ -69,12 +72,12 @@ rule create_simulated_truth_file:
 
 rule create_truth_file:
     input:
-        vcf="data/dataset{n}/original_{truth_dataset}.vcf.gz",
-        regions_file="data/dataset{n}/original_{truth_dataset}_regions.bed"
+        vcf="data/{dataset}{n}/original_{truth_dataset}.vcf.gz",
+        regions_file="data/{dataset}{n}/original_{truth_dataset}_regions.bed"
 
     output:
-        vcf="data/dataset{n}/truth_{truth_dataset}.vcf.gz",
-        regions_file="data/dataset{n}/truth_{truth_dataset}_regions.bed"
+        vcf="data/{dataset}{n,\d+}/truth_{truth_dataset}.vcf.gz",
+        regions_file="data/{dataset}{n,\d+}/truth_{truth_dataset}_regions.bed"
     params:
         regions = get_dataset_regions_comma_separated,
         samples=samples_list
@@ -177,7 +180,8 @@ rule debug_genotyping:
         truth_vcf="data/{dataset}/truth_{truth_id}.vcf.gz",
         truth_regions="data/{dataset}/truth_{truth_id}_regions.bed",
         node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
-        model="data/{dataset}/combination_model.npz",
+        #model="data/{dataset}/combination_model.npz",
+        model="data/{dataset}/sampling_count_model_{n_individuals}all.npz",
         helper_variants="data/{dataset}/helper_model_{n_individuals}all.npy",
         combination_matrix="data/{dataset}/helper_model_{n_individuals}all_combo_matrix.npy",
         genotype_probs="data/{dataset}/{method}N{n_individuals}all_{experiment}.vcf.gz.tmp.probs.npy",
@@ -186,6 +190,45 @@ rule debug_genotyping:
 
     output:
         "data/{dataset}/debugging-{method}N{n_individuals,\d+}all-{truth_id}-{experiment}.txt"
+
+    shell:
+        "kage analyse_variants -g {input.variant_to_nodes} "
+        "-i {input.kmer_index} "
+        "-R {input.reverse_variant_kmers} "
+        "-k 31 "
+        "-v {input.input_vcf} "
+        "-P {input.genotyped_vcf} "
+        "-T {input.truth_vcf} "
+        "-n {input.node_counts} "
+        "-m {input.model} "
+        "-f {input.helper_variants} "
+        "-F {input.combination_matrix} "
+        "-p {input.genotype_probs} "
+        "-c {input.genotype_count_probs} "
+        #"-a {input.pangenie} "
+        "-t {input.truth_regions} > {output}"
+
+
+
+rule debug_genotyping_mapped_reads:
+    input:
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        kmer_index="data/{dataset}/kmer_index_only_variants.npz",
+        reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
+        input_vcf="data/{dataset}/variants_no_genotypes.vcf",
+        genotyped_vcf="data/{dataset}/kageMappedReadsN{n_individuals,\d+}all_{experiment}.vcf.gz",
+        truth_vcf="data/{dataset}/truth_{truth_id}.vcf.gz",
+        truth_regions="data/{dataset}/truth_{truth_id}_regions.bed",
+        node_counts="data/{dataset}/{experiment}.node_counts_giraffe.npy",
+        model="data/{dataset}/model_for_read_mapping_with_sampled_reads.npz",
+        helper_variants="data/{dataset}/helper_model_{n_individuals}all.npy",
+        combination_matrix="data/{dataset}/helper_model_{n_individuals}all_combo_matrix.npy",
+        genotype_probs="data/{dataset}/kageMappedReadsN{n_individuals}all_{experiment}.vcf.gz.tmp.probs.npy",
+        genotype_count_probs="data/{dataset}/kageMappedReadsN{n_individuals}all_{experiment}.vcf.gz.tmp.count_probs.npy",
+        #pangenie="data/{dataset}/pangenieN32_{experiment}.vcf.gz"
+
+    output:
+        "data/{dataset}/debugging-kageMappedReadsN{n_individuals,\d+}all-{truth_id}-{experiment}.txt"
 
     shell:
         "kage analyse_variants -g {input.variant_to_nodes} "

@@ -21,8 +21,8 @@ def figure2_names(wildcards):
 rule figure1:
     input:
         malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv",
-        kage="data/dataset1/happy-hg002-usN2058all_hg002_simulated_reads_15x.extended.csv",
-        naivekage="data/dataset1/happy-hg002-naivekage_hg002_simulated_reads_15x.extended.csv"
+        kage="data/dataset1/happy-hg002-kageNoHelperModelN2058all_hg002_simulated_reads_15x.extended.csv",
+        naivekage="data/dataset1/happy-hg002-naivekageN2548all_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure1.html"
     conda: "envs/analysis.yml"

@@ -18,7 +18,7 @@ def get_chromosome_graph_names(wildcards):
 def get_dataset_genome_size(wildcards):
     return config["analysis_regions"][wildcards.dataset]["genome_size"]
 
-"""
+
 rule make_chromosome_graph:
     input:
         vcf = "data/{dataset}/variants.vcf.gz",
@@ -44,7 +44,6 @@ rule merge_chromosome_graphs:
     benchmark: "data/{dataset}/benchmarks/merge_chromosome_graphs.tsv"
     shell:
         "obgraph merge_graphs -o {output} -g {input}"
-"""
 
 
 rule make_variant_to_nodes:
@@ -91,17 +90,94 @@ rule make_genotype_matrix:
         #"n_individuals=$(zcat {input.vcf} | head -n 1000 | grep -i '#chrom' | python3 -c 'import sys; print(len(list(sys.stdin)[0].split())-9)') || true && "
         "n_variants=$(grep -v '#' {input.vcf_no_genotypes} | wc -l) || true && "
         "obgraph make_genotype_matrix -v {input.vcf} -o {output.genotype_matrix} -n {wildcards.n_individuals} -m $n_variants -t {config[n_threads_data]}"
+    
+    
+rule make_genotype_txt_matrix:
+    input:
+        vcf="data/{dataset}/variants_{n_individuals}{subpopulation}.vcf.gz",
+    output:
+        genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals,\d+}{subpopulation,[a-z]+}.txt.gz",
+    threads: 1
+    benchmark: "data/{dataset}/benchmarks/make_genotype_txt_matrix_{n_individuals}{subpopulation}.tsv"
+    shell:
+        'gunzip -c {input} | grep -v "^#" | cut -f 10- | tr -d "|" | tr -d "\n" | tr -d "\t" | pigz -c > {output} '
+
+
+rule make_phased_genotype_matrix:
+    input:
+        #vcf="data/{dataset}/variants_{n_individuals}{subpopulation}.vcf.gz",
+        vcf="data/{dataset}/genotype_matrix_{n_individuals}{subpopulation}.txt.gz",
+        vcf_no_genotypes="data/{dataset}/variants_no_genotypes.vcf"
+    output:
+        genotype_matrix="data/{dataset}/phased_genotype_matrix_{n_individuals,\d+}{subpopulation,[a-z]+}.npz",
+    threads: 1
+    benchmark: "data/{dataset}/benchmarks/make_phased_genotype_matrix_{n_individuals}{subpopulation}.tsv"
+    resources:
+        mem_gb=150
+    conda: "envs/kage.yml"
+    shell:
+        #"n_individuals=$(zcat {input.vcf} | head -n 1000 | grep -i '#chrom' | python3 -c 'import sys; print(len(list(sys.stdin)[0].split())-9)') || true && "
+        "n_variants=$(grep -v '#' {input.vcf_no_genotypes} | wc -l) || true && "
+        "obgraph make_genotype_matrix --make-phased-matrix True -v {input.vcf} -o {output.genotype_matrix} -n {wildcards.n_individuals} -m $n_variants -t {config[n_threads_data]}"
+
+
+rule make_kmer_counter_index:
+    input:
+        kmer_index="data/{dataset}/kmer_index_only_variants_with_revcomp.npz"
+    output:
+        index="data/{dataset}/counter_index_only_variants_with_revcomp.npz"
+    shell:
+        "graph_kmer_index create_counter_index -i {input.kmer_index} -o {output.index}"
+
+
+rule make_count_model:
+    input:
+        haplotype_to_nodes="data/{dataset}/disc_backed_haplotype_to_nodes_{n_individuals}{subpopulation}.npz",
+        graph="data/{dataset}/obgraph.npz",
+        #counter_index="data/{dataset}/counter_index_only_variants_with_revcomp.npz"
+        counter_index="data/{dataset}/kmer_index_only_variants_with_revcomp.npz"
+    output:
+        "data/{dataset}/sampling_count_model_{n_individuals,\d+}{subpopulation}.npz"
+    threads:
+        config["n_threads_data_quarter"]
+    resources:
+        mem_gb=450
+    benchmark: "data/{dataset}/benchmarks/make_count_model_{n_individuals}{subpopulation}.tsv"
+    shell:
+        "kage sample_node_counts_from_population -g {input.graph} "
+        "-H {input.haplotype_to_nodes} "
+        #"-H data/dataset1/disc_backed_haplotype_to_nodes "
+        "-i {input.counter_index} -o {output} -t 35 --max-count 15"
 
 
 rule make_haplotype_to_nodes:
     input:
-        graph="data/{dataset}/obgraph.npz",
-        vcf = "data/{dataset}/variants_{n_individuals}{subpopulation}.vcf.gz",
+        #graph="data/{dataset}/obgraph.npz",
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        #vcf = "data/{dataset}/variants_{n_individuals}{subpopulation}.vcf.gz",
+        phased_genotype_matrix="data/{dataset}/phased_genotype_matrix_{n_individuals}{subpopulation}.npz"
     output:
         "data/{dataset}/haplotype_to_nodes_{n_individuals,\d+}{subpopulation}.npz"
+    benchmark:
+        "data/{dataset}/benchmarks/make_haplotype_to_nodes_{n_individuals}{subpopulation}.tsv"
     shell:
         "n_haplotypes=$((2*{wildcards.n_individuals})) && "
-        "obgraph make_haplotype_to_nodes -g {input.graph} -v {input.vcf} -n 5 -o {output}"
+        #"obgraph make_haplotype_to_nodes -g {input.graph} -v {input.vcf} -n $n_haplotypes -o {output}"
+        "obgraph make_haplotype_to_nodes_bnp -g {input.variant_to_nodes} -v {input.phased_genotype_matrix} -n $n_haplotypes -o {output}"
+
+
+rule make_disc_backed_haplotype_to_nodes:
+    input:
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        phased_genotype_matrix="data/{dataset}/phased_genotype_matrix_{n_individuals}{subpopulation}.npz"
+    output:
+        "data/{dataset}/disc_backed_haplotype_to_nodes_{n_individuals,\d+}{subpopulation}.npz"
+    benchmark:
+        "data/{dataset}/benchmarks/make_haplotype_to_nodes_{n_individuals}{subpopulation}.tsv"
+    shell:
+        "n_haplotypes=$((2*{wildcards.n_individuals})) && "
+        #"obgraph make_haplotype_to_nodes -g {input.graph} -v {input.vcf} -n $n_haplotypes -o {output}"
+        "obgraph make_haplotype_to_nodes_bnp -g {input.variant_to_nodes} -v {input.phased_genotype_matrix} -n $n_haplotypes -o {output} -d True"
 
 
 """
@@ -252,7 +328,7 @@ rule make_position_id_index:
         "obgraph make_position_id -g {input.graph} -o {output.index}"
 
 
-rule make_variant_kmer_index:
+rule get_variant_kmers:
     input:
         graph="data/{dataset}/obgraph.npz",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
@@ -261,19 +337,48 @@ rule make_variant_kmer_index:
         linear_kmer_index="data/{dataset}/linear_kmers_counter.npz",
         position_id_index="data/{dataset}/position_id_index.npz"
     output:
-        variant_kmers="data/{dataset}/variant_kmers.npz",
-        index="data/{dataset}/kmer_index_only_variants.npz",
+        variant_kmers="data/{dataset}/variant_kmers_short_variants.npz",
+    benchmark:
+        "data/{dataset}/benchmarks/get_variant_kmers.tsv"
+    resources: mem_gb=400
+    threads: config["n_threads_data"]
+    conda: "envs/kage.yml"
+    shell:
+        "graph_kmer_index make_unique_variant_kmers -g {input.graph} -V {input.variant_to_nodes} -k {config[k]} -o {output} -v {input.vcf} "
+        " -t {config[n_threads_data_quarter]} -c 20000 --max-variant-nodes 3 -I {input.linear_kmer_index} -p {input.position_id_index} -D True "
+
+rule get_structural_variant_kmers:
+    input:
+        graph="data/{dataset}/obgraph.npz",
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        vcf="data/{dataset}/variants_no_genotypes.vcf",
+        #linear_kmer_index="data/{dataset}/linear_kmer_index.npz",
+        linear_kmer_index="data/{dataset}/linear_kmers_counter.npz",
+        position_id_index="data/{dataset}/position_id_index.npz"
+    output:
+        variant_kmers="data/{dataset}/structural_variant_kmers.npz",
     benchmark:
         "data/{dataset}/benchmarks/make_variant_kmer_index.tsv"
     resources: mem_gb=400
     threads: config["n_threads_data"]
     conda: "envs/kage.yml"
     shell:
-        #"graph_kmer_index make_unique_variant_kmers -g {input.graph} -V {input.variant_to_nodes} -k {config[k]} -o data/{wildcards.dataset}/variant_kmers -v {input.vcf} -t  "
-        #"{config[n_threads_data]} -c 10000 --max-variant-nodes 5 -I {input.linear_kmer_index} && "
-        "graph_kmer_index make_unique_variant_kmers -g {input.graph} -V {input.variant_to_nodes} -k {config[k]} -o data/{wildcards.dataset}/variant_kmers -v {input.vcf} "
-        " -t {config[n_threads_data_quarter]} -c 20000 --max-variant-nodes 3 -I {input.linear_kmer_index} -p {input.position_id_index} -D True && "
-        "graph_kmer_index make_from_flat -o {output.index} -f data/{wildcards.dataset}/variant_kmers.npz -m 200000033  "
+        "graph_kmer_index sample_kmers_from_structural_variants -g {input.graph} -V {input.variant_to_nodes} -i {input.linear_kmer_index} -k {config[k]} -o {output}"
+
+
+rule merge_structural_variant_kmers_with_variant_kmers:
+    input:
+        variant_kmers="data/{dataset}/variant_kmers_short_variants.npz",
+        structural_variant_kmers="data/{dataset}/structural_variant_kmers.npz",
+    output:
+        index="data/{dataset}/variant_kmers.npz",
+    benchmark:
+        "data/{dataset}/benchmarks/merge_structural_variant_kmers_with_variant_kmers.tsv"
+    resources: mem_gb=50
+    threads: 1
+    conda: "envs/kage.yml"
+    shell:
+        "graph_kmer_index merge_flat_kmers --flat-kmers {input.variant_kmers},{input.structural_variant_kmers} -o {output}"
 
 
 rule make_reverse_variant_kmer_index:
@@ -381,15 +486,28 @@ rule make_combination_model:
 rule find_tricky_variants:
     input:
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        model= "data/{dataset}/combination_model.npz",
+        #model= "data/{dataset}/combination_model.npz",
+        model= "data/{dataset}/sampling_count_model_{n_individuals}{subpopulation}.npz",
         reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
     output:
-        tricky_variants="data/{dataset}/tricky_variants.npy",
-        tricky_variants_nonunique_kmers="data/{dataset}/tricky_variants_nonunique_kmers.npy"
+        tricky_variants="data/{dataset}/tricky_variants_{n_individuals,\d+}{subpopulation}.npy",
+        tricky_variants_nonunique_kmers="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}_nonunique_kmers.npy"
     conda: "envs/kage.yml"
     shell:
         "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 1000 && "
         "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants_nonunique_kmers} -u True"
+
+
+rule find_variants_with_nonunique_kmers:
+    input:
+        kmer_index="data/{dataset}/kmer_index.npz",
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
+    output:
+        tricky_variants="data/{dataset}/variants_with_nonunique_kmers.npy",
+    conda: "envs/kage.yml"
+    shell:
+        "kage find_variants_with_nonunique_kmers -v {input.variant_to_nodes} -i {input.kmer_index} -r {input.reverse_variant_kmers} -o {output.tricky_variants} "
 
 
 rule make_index_bundle:

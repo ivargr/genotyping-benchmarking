@@ -1,0 +1,2 @@
+from snakemake import config
+

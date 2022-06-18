@@ -134,7 +134,7 @@ def plot_result_files(args):
         n_individuals = 2548
         if "N" in file_name:
             logging.info("File name: %s" % file_name)
-            n_individuals = int(file_name.split("-")[2].split("_")[0].split("N")[1].replace("all", ""))
+            n_individuals = int(file_name.split("-")[2].split("_")[0].split("N")[-1].replace("all", ""))
 
         ticker_texts.append(ticker_text)
 

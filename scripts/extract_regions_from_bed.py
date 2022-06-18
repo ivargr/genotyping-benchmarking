@@ -44,6 +44,7 @@ else:
                 print(chromosome + "\t" + str(region_start) + "\t" + str(end))
             else:
                 n_skipped_lines += 1
+            continue
         elif end > region_end:
             # todo fix
             n_skipped_lines += 1

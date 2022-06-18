@@ -69,10 +69,16 @@ rule prepare_dataset_vcf:
     params:
         regions=get_dataset_regions_comma_separated,
         only_snps_command=only_snps_command
-    conda: "envs/prepare_data.yml"
-    shell:
+    #conda: "envs/prepare_data.yml"
+    run:
         #"bcftools view -O z --regions {config[analysis_regions][{dataset}]} variants.vcf.gz > {output} && tabix -p vcf {output} "
-        "bcftools view -O z --regions {params.regions} {input.vcf} {params.only_snps_command} > {output} && tabix -f -p vcf {output} "
+        if wildcards.number == "2":
+            print("Simply copying variants since we're on whole genome")
+            #shell("cp {input} {output} && cp {input}.tbi {output}.tbi")
+            shell("zcat {input} | python3 scripts/filter_variants_with_n.py | bgzip -c > {output} && tabix -p vcf -f {output}")
+        else:
+            print("Subsetting variants")
+            shell("bcftools view --regions {params.regions} {input.vcf} {params.only_snps_command} | python3 scripts/filter_variants_with_n.py | bgzip -c > {output} && tabix -f -p vcf {output} ")
 
 
 rule prepare_svdataset_vcf:
