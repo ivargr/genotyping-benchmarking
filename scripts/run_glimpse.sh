@@ -5,13 +5,15 @@ IRG=$(echo $glimpse_params| cut -d" " -f3)
 ORG=$(echo $glimpse_params | cut -d" " -f4)
 
 
-REF="variants.vcf.gz"
 VCF=$2
-MAP="../../resources/genetic_maps/chr$chromosome.b38.gmap.gz"
+REF=$3
+MAP="resources/genetic_maps/chr$chromosome.b38.gmap.gz"
 
-OUT=$chromosome.${ID}.bcf
+OUT=$VCF-GLIMPSE-$chromosome.${ID}.bcf
+
+echo "Glimpse will create output file $OUT"
 
 echo $IRG
 
-GLIMPSE_phase_static --input-GL --input ${VCF} --reference ${REF} --map ${MAP} --input-region ${IRG} --output-region ${ORG} --output ${OUT}
+glimpse/GLIMPSE_phase_static --input-GL --input ${VCF} --reference ${REF} --map ${MAP} --input-region ${IRG} --output-region ${ORG} --output ${OUT}
 bcftools index -f ${OUT}

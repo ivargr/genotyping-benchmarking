@@ -154,6 +154,16 @@ rule make_count_model:
         "-i {input.counter_index} -o {output} -t 25 --max-count 15"
 
 
+rule refine_count_model:
+    input:
+        model="data/{dataset}/sampling_count_model_{n_individuals,\d+}{subpopulation}.npz",
+        variant_to_nodes = "data/{dataset}/variant_to_nodes.npz",
+    output: "data/{dataset}/refined_sampling_count_model_{n_individuals,\d+}{subpopulation}.npz"
+    conda: "envs/kage.yml"
+    shell:
+        "kage refine_sampling_model -s {input.model} -v {input.variant_to_nodes} -o {output}"
+
+
 rule make_haplotype_to_nodes:
     input:
         #graph="data/{dataset}/obgraph.npz",
