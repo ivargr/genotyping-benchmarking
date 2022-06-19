@@ -1,7 +1,7 @@
 
 
 def get_dataset_regions_comma_separated(wildcards):
-    return config["analysis_regions"]["dataset" + wildcards.number]["region"].replace(" ", ",")
+    return config["analysis_regions"][wildcards.dataset]["region"].replace(" ", ",")
 
 # GLIMPSE has no working conda or anything
 # to make installation backwards compatible, download static binaries from release
@@ -49,16 +49,26 @@ rule run_glimpse:
     benchmark: "data/{dataset}/run_glimpse_{n_individuals,\d+}all_{experiment}.tsv"
     conda: "envs/bcftools.yml"
     threads: config["n_threads"]
+    params:
+        regions=get_dataset_regions_comma_separated,
     shell:
         """
         tabix -p vcf -f {input.vcf}
         rm -f data/{wildcards.dataset}/{input.vcf}-GLIMPSE-*.bcf
-        cat {input.chunks} | parallel -j {config[n_threads]} --line-buffer "scripts/run_glimpse.sh {{}} {input.vcf} {input.ref_vcf}"
+        cat {input.chunks} | parallel -j 40 --line-buffer "scripts/run_glimpse.sh {{}} {input.vcf} {input.ref_vcf}"
        
         # merge all result files 
-        LST=data/{wildcards.dataset}/glimpse_list.tmp.txt
-        ls {input.vcf}-GLIMPSE-*.bcf > $LST
-        {input.glimpse_command_ligate} --input $LST --output {output.vcf}
+        chromosomes='{params.regions}'
+        for chromosome in $(echo $chromosomes | tr "," "\n")
+            do
+            LST=data/{wildcards.dataset}/glimpse_list$chromosome.tmp.txt
+            ls {input.vcf}-GLIMPSE-$chromosome.*.bcf | python3 scripts/sort_glimpse_list.py > $LST
+            {input.glimpse_command_ligate} --input $LST --output data/{wildcards.dataset}/glimpse_tmp_$chromosome.vcf.gz
+            tabix -p vcf -f data/{wildcards.dataset}/glimpse_tmp_$chromosome.vcf.gz
+        done
+        wait
+        bcftools concat -O z data/{wildcards.dataset}/glimpse_tmp_*.vcf.gz > {output.vcf}
         tabix -p vcf -f {output.vcf}
+        
         """
     

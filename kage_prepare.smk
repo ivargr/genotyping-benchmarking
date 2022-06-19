@@ -151,6 +151,7 @@ rule make_count_model:
         "kage sample_node_counts_from_population -g {input.graph} "
         "-H {input.haplotype_to_nodes} "
         #"-H data/dataset1/disc_backed_haplotype_to_nodes "
+        "--limit-to-n-individuals 25 "
         "-i {input.counter_index} -o {output} -t 25 --max-count 15"
 
 
