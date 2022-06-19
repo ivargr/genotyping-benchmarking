@@ -306,7 +306,7 @@ rule make_helper_model:
     input:
         genotype_matrix="data/{dataset}/genotype_matrix_{n_individuals}{subpopulation}.npy",
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        node_count_model="data/{dataset}/combination_model.npz",
+        #node_count_model="data/{dataset}/combination_model.npz",
     output:
         helper_model="data/{dataset}/helper_model_{n_individuals,\d+}{subpopulation,[a-z]+}.npy",
         helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals,\d+}{subpopulation,[a-z]+}_combo_matrix.npy"
@@ -315,7 +315,7 @@ rule make_helper_model:
     conda: "envs/kage.yml"
     shell:
         "kage create_helper_model -o data/{wildcards.dataset}/helper_model_{wildcards.n_individuals}{wildcards.subpopulation} "
-        "-g {input.genotype_matrix} -w 100 -v {input.variant_to_nodes} -n {input.node_count_model} -t {config[n_threads_data_quarter]} "
+        "-g {input.genotype_matrix} -w 100 -v {input.variant_to_nodes} -t {config[n_threads_data_quarter]} "
 
 rule make_critical_paths_index:
     input:
