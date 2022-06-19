@@ -441,7 +441,7 @@ rule sample_kmers_for_kmer_model:
     conda: "envs/kage.yml"
     shell:
         #"graph_kmer_index make -s 1 -k {config[k]} -G {params.genome_size} -o {output.flat_kmers} -g {input.graph} --max-frequency 100000 -v 5 -t {config[n_threads_data]} --only-save-one-node-per-kmer True --include-reverse-complement True --whitelist {input.variant_kmers}"
-        "graph_kmer_index index -k {config[k]} -g {input.graph} -t 25 --whitelist {input.variant_kmers} "
+        "graph_kmer_index index -k {config[k]} -g {input.graph} -t {config[n_threads_data]} --whitelist {input.variant_kmers} "
         " -r True -p {input.position_id_index} -c {input.critical_paths} -o {output.flat_kmers} --max-variant-nodes 3"
 
 
