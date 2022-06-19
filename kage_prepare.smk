@@ -128,6 +128,7 @@ rule make_kmer_counter_index:
         kmer_index="data/{dataset}/kmer_index_only_variants_with_revcomp.npz"
     output:
         index="data/{dataset}/counter_index_only_variants_with_revcomp.npz"
+    conda: "envs/kage.yml"
     shell:
         "graph_kmer_index create_counter_index -i {input.kmer_index} -o {output.index}"
 
@@ -145,6 +146,7 @@ rule make_count_model:
     resources:
         mem_gb=450
     benchmark: "data/{dataset}/benchmarks/make_count_model_{n_individuals}{subpopulation}.tsv"
+    conda: "envs/kage.yml"
     shell:
         "kage sample_node_counts_from_population -g {input.graph} "
         "-H {input.haplotype_to_nodes} "
@@ -162,6 +164,7 @@ rule make_haplotype_to_nodes:
         "data/{dataset}/haplotype_to_nodes_{n_individuals,\d+}{subpopulation}.npz"
     benchmark:
         "data/{dataset}/benchmarks/make_haplotype_to_nodes_{n_individuals}{subpopulation}.tsv"
+    conda: "envs/kage.yml"
     shell:
         "n_haplotypes=$((2*{wildcards.n_individuals})) && "
         #"obgraph make_haplotype_to_nodes -g {input.graph} -v {input.vcf} -n $n_haplotypes -o {output}"
@@ -176,6 +179,7 @@ rule make_disc_backed_haplotype_to_nodes:
         "data/{dataset}/disc_backed_haplotype_to_nodes_{n_individuals,\d+}{subpopulation}.npz"
     benchmark:
         "data/{dataset}/benchmarks/make_haplotype_to_nodes_{n_individuals}{subpopulation}.tsv"
+    conda: "envs/kage.yml"
     shell:
         "n_haplotypes=$((2*{wildcards.n_individuals})) && "
         #"obgraph make_haplotype_to_nodes -g {input.graph} -v {input.vcf} -n $n_haplotypes -o {output}"
