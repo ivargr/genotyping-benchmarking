@@ -6,7 +6,7 @@ dependencies:
   - python=3.8
   - pip
   - pip:
-      - kage-genotyper==0.0.24
+      - kage-genotyper==0.0.25
       - kmer_mapper==0.0.19
       - obgraph==0.0.23
   - tabix
