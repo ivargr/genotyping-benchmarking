@@ -16,6 +16,7 @@ rule map:
         benchmark_report="data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
     params:
         n_nodes=get_dataset_n_nodes
+    conda: "envs/kage.yml"
     threads: config["n_threads"]
     shell:
         #"/usr/bin/time -v kage count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
