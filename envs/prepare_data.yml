@@ -3,11 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.8
-  - pip
-  - pip:
-      - graph_read_simulator==0.0.6
-      - obgraph
+  - python=3
   - openssl=1.0
   - bcftools
   - tabix

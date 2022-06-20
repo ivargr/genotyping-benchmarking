@@ -9,3 +9,4 @@ dependencies:
       - graph_read_simulator==0.0.9
   - bcftools
   - tabix
+  - samtools

@@ -22,7 +22,7 @@ rule prepare_simulation:
         coordinate_map="data/{dataset}/{truth_dataset}_coordinate_map_chromosome{chromosome}_haplotype{haplotype}.npz",
         haplotype_reference="data/{dataset}/{truth_dataset}_chromosome{chromosome}_haplotype{haplotype}_reference.fasta",
         haplotype_reference_fasta="data/{dataset}/{truth_dataset}_chromosome{chromosome}_haplotype{haplotype}_reference.fasta.fai",
-    conda: "envs/prepare_data.yml"
+    conda: "envs/graph_read_simulator.yml"
     shell:
         "graph_read_simulator prepare_simulation --chromosome {wildcards.chromosome} --haplotype {wildcards.haplotype} "
         "--vcf {input.vcf} --reference {input.reference} -o data/{wildcards.dataset}/{wildcards.truth_dataset}_ && "
@@ -36,7 +36,7 @@ rule simulate_reads_for_chromosome_and_haplotype:
 
     output:
         "data/{dataset}/{truth_dataset}_raw_simulated_reads_chromosome{chromosome}_haplotype{haplotype}_coverage{coverage}.txt"
-    conda: "envs/prepare_data.yml"
+    conda: "envs/graph_read_simulator.yml"
     shell:
         "graph_read_simulator simulate_reads -s 0.001 --deletion_prob 0.001 --insertion_prob 0.001 -D data/{wildcards.dataset}/{wildcards.truth_dataset}_ '{wildcards.chromosome} {wildcards.haplotype}' {wildcards.coverage} > {output}"
 
@@ -46,7 +46,7 @@ rule simulate_reads:
     output:
         reads="data/{dataset}/{truth_dataset}_simulated_reads_{coverage,\d+}x.fa",
         read_positions="data/{dataset}/{truth_dataset}_simulated_reads_{coverage,\d+}x.readpositions"
-    conda: "envs/prepare_data.yml"
+    conda: "envs/graph_read_simulator.yml"
     shell:
         "cat {input} | graph_read_simulator assign_ids {output.read_positions} {output.reads}"
 
