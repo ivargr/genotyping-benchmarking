@@ -54,7 +54,7 @@ rule prepare_simulated_dataset_vcf:
     params:
         n_individuals=get_n_individuals,
         n_variants=get_n_variants
-    conda: "envs/prepare_data.yml"
+    conda: "envs/graph_read_simulator.yml"
     shell:
         "graph_read_simulator simulate_population_vcf -r {input.ref} -n {params.n_variants} -i {params.n_individuals} -o {output.vcf} -I {output.individual_vcf} && "
         "bgzip -c -f {output.vcf} > {output.vcf_gz} && tabix -f -p vcf {output.vcf_gz} && "

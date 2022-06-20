@@ -3,10 +3,10 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3
+  - python=3.8
   - pip
   - pip:
-      - graph_read_simulator
+      - graph_read_simulator==0.0.6
       - obgraph
   - openssl=1.0
   - bcftools
@@ -18,3 +18,4 @@ dependencies:
   - bedtools==2.26.0
   - seqtk
   - pigz
+  - samtools
