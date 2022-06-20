@@ -203,7 +203,12 @@ rule run_bayestyper:
         "for dir in data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads}/bayestyper_unit_*; do\n "
         "    bayesTyper genotype -v $dir/variant_clusters.bin -c data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads}/bayestyper_cluster_data -s {input.samples} -g {input.ref} -d {input.decoy} -o $dir/bayestyper -z -p {config[n_threads]}; "
         "done && "
-        "bcftools concat -O z -o {output.genotypes} data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads}/bayestyper_unit_*/bayestyper.vcf.gz"
+        # hack since bcftools seem to not bgzip, but only gzip:
+        "ls data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads}/bayestyper_unit_*/*.vcf.gz | xargs -P 16 -n 1 gunzip && "
+        "ls data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads}/bayestyper_unit_*/*.vcf | xargs -P 16 -n 1 bgzip && "
+        "ls data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads}/bayestyper_unit_*/*.vcf.gz | xargs -P 16 -n 1 tabix -f -p vcf && "
+        
+        "bcftools concat -a -O z -o {output.genotypes} data/{wildcards.dataset}/tmp_bayestyper_data_{wildcards.reads}/bayestyper_unit_*/bayestyper.vcf.gz"
 
 
 rule run_gatk:
