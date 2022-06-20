@@ -184,6 +184,7 @@ rule kage_naive:
     params:
         sample_name=get_sample_name_from_experiment,
         read_coverage=get_read_coverage_from_experiment
+    conda: "envs/kage.yml"
     threads:
         4
     shell:
