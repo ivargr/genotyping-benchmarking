@@ -20,9 +20,9 @@ rule install_glimpse:
 rule make_glimpse_chunks:
     input:
         glimpse_command="glimpse/GLIMPSE_chunk_static",
-        variants="data/dataset{number}/variants.vcf.gz"
+        variants="data/{dataset}/variants.vcf.gz"
     output:
-        "data/dataset{number}/glimpse_chunks.txt"
+        "data/{dataset}/glimpse_chunks.txt"
     params:
         regions=get_dataset_regions_comma_separated,
     shell:
@@ -30,10 +30,10 @@ rule make_glimpse_chunks:
         chromosomes='{params.regions}'
         for chromosome in $(echo $chromosomes | tr "," "\n")
             do
-            {input.glimpse_command} --input {input.variants} --region $chromosome  --window-size 2000000 --buffer-size 200000 --output data/dataset{wildcards.number}/glimpse_chunk.$chromosome.txt &
+            {input.glimpse_command} --input {input.variants} --region $chromosome  --window-size 2000000 --buffer-size 200000 --output data/{wildcards.dataset}/glimpse_chunk.$chromosome.txt &
         done
         wait
-        cat data/dataset{wildcards.number}/glimpse_chunk.*.txt > {output}
+        cat data/{wildcards.dataset}/glimpse_chunk.*.txt > {output}
         """
 
 
