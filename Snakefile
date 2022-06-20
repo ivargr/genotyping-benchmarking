@@ -35,7 +35,7 @@ ruleorder:
 
 rule all:
     input:
-        #"data/dataset1/happy-hg002-kageNoHelperModelN250all_hg002_simulated_reads_15x.extended.csv"
+        "data/dataset1/happy-hg002-kageNoHelperModelN250all_hg002_simulated_reads_15x.extended.csv",
         #"data/dataset1/debugging-usN20all-hg002-hg002_simulated_reads_15x.txt"
         "data/dataset1/happy-hg002-usN250all_hg002_simulated_reads_15x.extended.csv"
         #"data/dataset2/happy-hg002-usN25all_hg002_real_reads_15x.extended.csv"

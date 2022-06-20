@@ -507,7 +507,6 @@ rule make_combination_model:
         "{input.reverse_variant_kmers} -m {params.n_nodes} -o {output.model} "
         "-k {config[k]} -t {config[n_threads_data_quarter]} -V v3 "
 
-
 rule find_tricky_variants:
     input:
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
@@ -516,10 +515,21 @@ rule find_tricky_variants:
         reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
     output:
         tricky_variants="data/{dataset}/tricky_variants_{n_individuals,\d+}{subpopulation}.npy",
+    conda: "envs/kage.yml"
+    shell:
+        "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 1000 "
+
+
+rule find_tricky_variants_nonunique_kmers:
+    input:
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        #model= "data/{dataset}/combination_model.npz",
+        model= "data/{dataset}/sampling_count_model_{n_individuals}{subpopulation}.npz",
+        reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
+    output:
         tricky_variants_nonunique_kmers="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}_nonunique_kmers.npy"
     conda: "envs/kage.yml"
     shell:
-        "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants} -M 1000 && "
         "kage find_tricky_variants -v {input.variant_to_nodes} -m {input.model} -r {input.reverse_variant_kmers} -o {output.tricky_variants_nonunique_kmers} -u True"
 
 
