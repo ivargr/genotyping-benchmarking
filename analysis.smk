@@ -246,3 +246,44 @@ rule debug_genotyping_mapped_reads:
         "-c {input.genotype_count_probs} "
         #"-a {input.pangenie} "
         "-t {input.truth_regions} > {output}"
+
+
+rule find_variants_with_nonunique_kmers2:
+    input:
+        variants="data/{dataset}/variants_no_genotypes.vcf",
+        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        reverse_kmer_index="data/{dataset}/reverse_variant_kmers.npz",
+        population_kmers="data/{dataset}/kmer_index.npz"
+    output:
+        "data/{dataset}/variants_with_nonunique_kmers.pickle"
+    conda: "envs/kage.yml"
+    shell:
+        "python3 scripts/find_variants_with_nonunique_kmers.py "
+        "{input.variants} "
+        "{input.reverse_kmer_index} "
+        "{input.population_kmers} "
+        "{input.variant_to_nodes} "
+        "{output} "
+
+
+rule analyse_variants_with_nonunique_kmers:
+    input:
+        variants="data/{dataset}/variants_no_genotypes.vcf",
+        naive_kage="data/{dataset}/naivekageN2548all_hg002_simulated_reads_15x.vcf.gz",
+        kage_no_helper_model="data/{dataset}/kageNoHelperModelN250all_hg002_simulated_reads_15x.vcf.gz",
+        kage="data/{dataset}/usN2548all_hg002_simulated_reads_15x.vcf.gz",
+        truth="data/{dataset}/truth_hg002.vcf.gz",
+        nonunique="data/{dataset}/variants_with_nonunique_kmers.pickle",
+       
+    output:
+        "data/{dataset}/nonunique_variants_report.txt"
+        
+    conda: "envs/kage.yml"
+    shell:
+        "python3 scripts/analyse_variants_with_nonunnique_kmers.py "
+        "{input.variants} "
+        "{input.naive_kage} "
+        "{input.kage_no_helper_model} "
+        "{input.kage} "
+        "{input.truth} "
+        "{input.nonunique} > {output}"

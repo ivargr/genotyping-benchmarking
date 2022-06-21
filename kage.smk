@@ -33,17 +33,13 @@ def get_read_coverage_from_experiment(wildcards):
 rule genotype:
     input:
         node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
-        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        #variants="data/{dataset}/variants_no_genotypes.vcf",
-        variants="data/{dataset}/numpy_variants.npz",
-        model="data/{dataset}/refined_sampling_count_model_{n_individuals}all.npz",
-        #genotype_frequencies="data/{dataset}/genotype_frequencies_{n_individuals}individuals.npz",
-        #most_similar_variant_lookup="data/{dataset}/most_similar_variant_lookup_{n_individuals}individuals.npz",
-        #transition_probs="data/{dataset}/transition_probs_{n_individuals}individuals.npy",
-        helper_model="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
-        helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
-        tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
-        #index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}.npz"
+        #variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        #variants="data/{dataset}/numpy_variants.npz",
+        #model="data/{dataset}/refined_sampling_count_model_{n_individuals}all.npz",
+        #helper_model="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
+        #helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
+        #tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
+        index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}.npz"
     output:
         genotypes="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz",
         probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz.tmp.probs.npy",
@@ -59,13 +55,13 @@ rule genotype:
         read_coverage=get_read_coverage_from_experiment
     shell:
         "/usr/bin/time -v kage genotype -c {input.node_counts} "
-        #"-i {input.index_bundle} "
-        "-g {input.variant_to_nodes} " 
-        "-v {input.variants} " 
-        "-A {input.model} " 
-        "-f {input.helper_model} "
-        "-F {input.helper_model_combo_matrix} "
-        "-x {input.tricky_variants} "
+        "-i {input.index_bundle} "
+        #"-g {input.variant_to_nodes} " 
+        #"-v {input.variants} " 
+        #"-A {input.model} " 
+        #"-f {input.helper_model} "
+        #"-F {input.helper_model_combo_matrix} "
+        #"-x {input.tricky_variants} "
         "-C CombinationModelGenotyper " 
         "-t {config[n_threads]} "
         "-q 0.5 " 

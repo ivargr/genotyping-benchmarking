@@ -5,7 +5,7 @@ N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 
 
 METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
 #METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
-METHODS = ["us", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
+METHODS = ["usN2548all", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
 #METHODS = ["usN150all", "paragraph"]
 
 METHODS_JOINED = ",".join(METHODS)
@@ -21,8 +21,8 @@ def figure2_names(wildcards):
 rule figure1:
     input:
         malva="data/dataset1/happy-hg002-malva_hg002_simulated_reads_15x.extended.csv",
-        kage="data/dataset1/happy-hg002-kageNoHelperModelN250all_hg002_simulated_reads_15x.extended.csv",
-        naivekage="data/dataset1/happy-hg002-naivekageN250all_hg002_simulated_reads_15x.extended.csv"
+        kage="data/dataset1/happy-hg002-kageNoHelperModelN2548all_hg002_simulated_reads_15x.extended.csv",
+        naivekage="data/dataset1/happy-hg002-naivekageN2548all_hg002_simulated_reads_15x.extended.csv"
     output:
         "figure1.html"
     conda: "envs/analysis.yml"

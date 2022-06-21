@@ -151,8 +151,8 @@ rule make_count_model:
         "kage sample_node_counts_from_population -g {input.graph} "
         "-H {input.haplotype_to_nodes} "
         #"-H data/dataset1/disc_backed_haplotype_to_nodes "
-        "--limit-to-n-individuals 25 "
-        "-i {input.counter_index} -o {output} -t 25 --max-count 15"
+        #"--limit-to-n-individuals 25 "
+        "-i {input.counter_index} -o {output} -t 40 --max-count 15"
 
 
 rule refine_count_model:
@@ -549,8 +549,8 @@ rule make_index_bundle:
     input:
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
         numpy_variants="data/{dataset}/numpy_variants.npz",
-        model="data/{dataset}/combination_model.npz",
-        tricky_variants="data/{dataset}/tricky_variants.npy",
+        model="data/{dataset}/refined_sampling_count_model_{n_individuals}{subpopulation}.npz",
+        tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
         helper_variants="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
         combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
         kmer_index="data/{dataset}/kmer_index_only_variants_with_revcomp.npz"
