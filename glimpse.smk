@@ -55,7 +55,7 @@ rule run_glimpse:
         """
         tabix -p vcf -f {input.vcf}
         rm -f data/{wildcards.dataset}/{input.vcf}-GLIMPSE-*.bcf
-        cat {input.chunks} | parallel -j 40 --line-buffer "scripts/run_glimpse.sh {{}} {input.vcf} {input.ref_vcf}"
+        cat {input.chunks} | parallel -j {config[n_threads]} --line-buffer "scripts/run_glimpse.sh {{}} {input.vcf} {input.ref_vcf}"
        
         # merge all result files 
         chromosomes='{params.regions}'
