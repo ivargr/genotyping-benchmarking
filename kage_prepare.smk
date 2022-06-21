@@ -19,6 +19,15 @@ def get_dataset_genome_size(wildcards):
     return config["analysis_regions"][wildcards.dataset]["genome_size"]
 
 
+# some ruleorders that enable getting stuff from pre-built index bundles
+# comment out along with the rules to make everything froms scratch
+ruleorder:
+    download_index_bundle > make_index_bundle
+
+ruleorder:
+    get_variant_kmer_index_from_bundle > make_variant_kmer_index_with_reverse_complements    
+
+
 rule make_chromosome_graph:
     input:
         vcf = "data/{dataset}/variants.vcf.gz",
@@ -569,3 +578,31 @@ rule make_index_bundle:
         "-o {output} "
 
 
+# can be used to download specific index bundle directly from Zenodo instead of building from scratch
+rule download_index_bundle:
+    output:
+        "data/dataset2/index_2548all.npz"
+    shell:
+        "wget -O {output} https://zenodo.org/record/6674055/files/index_2548all.npz?download=1"
+
+
+rule get_variant_kmer_index_from_bundle:
+    input:
+        bundle="data/dataset2/index_2548all.npz"
+    output:
+        index="data/dataset2/kmer_index_only_variants_with_revcomp.npz"
+    run:
+        from graph_kmer_index.index_bundle import IndexBundle
+        bundle = IndexBundle.from_file(input.bundle)
+        kmer_index = bundle.indexes["KmerIndex"]
+        kmer_index.to_file(output.index)
+
+rule uncompress_index_bundle:
+    input:
+        bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}.npz"
+    output:
+        bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed.npz"
+    run:
+        from graph_kmer_index.index_bundle import IndexBundle
+        bundle = IndexBundle.from_file(input.bundle)
+        bundle.to_file(output.bundle, compress=False)

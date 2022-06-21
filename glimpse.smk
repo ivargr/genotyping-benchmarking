@@ -46,7 +46,7 @@ rule run_glimpse:
         chunks="data/{dataset}/glimpse_chunks.txt"
     output:
         vcf="data/{dataset}/kageWithGlimpseN{n_individuals,\d+}all_{experiment}.vcf.gz"
-    benchmark: "data/{dataset}/run_glimpse_{n_individuals,\d+}all_{experiment}.tsv"
+    benchmark: "data/{dataset}/benchmarks/glimpse_{n_individuals,\d+}all_{experiment}.tsv"
     conda: "envs/bcftools.yml"
     threads: config["n_threads"]
     params:
@@ -58,16 +58,17 @@ rule run_glimpse:
         cat {input.chunks} | parallel -j {config[n_threads]} --line-buffer "scripts/run_glimpse.sh {{}} {input.vcf} {input.ref_vcf}"
        
         # merge all result files 
+        rm -rf data/{wildcards.dataset}/glimpse_tmp_{wildcards.experiment}_*.vcf.gz
         chromosomes='{params.regions}'
         for chromosome in $(echo $chromosomes | tr "," "\n")
             do
             LST=data/{wildcards.dataset}/glimpse_list$chromosome.tmp.txt
             ls {input.vcf}-GLIMPSE-$chromosome.*.bcf | python3 scripts/sort_glimpse_list.py > $LST
-            {input.glimpse_command_ligate} --input $LST --output data/{wildcards.dataset}/glimpse_tmp_$chromosome.vcf.gz
-            tabix -p vcf -f data/{wildcards.dataset}/glimpse_tmp_$chromosome.vcf.gz
+            {input.glimpse_command_ligate} --input $LST --output data/{wildcards.dataset}/glimpse_tmp_{wildcards.experiment}_$chromosome.vcf.gz
+            tabix -p vcf -f data/{wildcards.dataset}/glimpse_tmp_{wildcards.experiment}_$chromosome.vcf.gz
         done
         wait
-        bcftools concat -O z data/{wildcards.dataset}/glimpse_tmp_*.vcf.gz > {output.vcf}
+        bcftools concat -O z data/{wildcards.dataset}/glimpse_tmp_{wildcards.experiment}_*.vcf.gz > {output.vcf}
         tabix -p vcf -f {output.vcf}
         
         """

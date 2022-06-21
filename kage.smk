@@ -39,7 +39,7 @@ rule genotype:
         #helper_model="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
         #helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
         #tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
-        index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}.npz"
+        index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}_uncompressed.npz"
     output:
         genotypes="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz",
         probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz.tmp.probs.npy",
@@ -119,11 +119,11 @@ rule genotype_without_helper_model:
 rule genotype_without_helper_model_and_without_popoulation_priors:
     input:
         node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
-        variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        variants="data/{dataset}/numpy_variants.npz",
-        model="data/{dataset}/refined_sampling_count_model_{n_individuals}all.npz",
-        tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
-    #index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}.npz"
+        #variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
+        #variants="data/{dataset}/numpy_variants.npz",
+        #model="data/{dataset}/refined_sampling_count_model_{n_individuals}all.npz",
+        #tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
+        index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}_uncompressed.npz"
     output:
         genotypes="data/{dataset}/kageNoPriorsN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz",
         probs="data/{dataset}/kageNoPriorsN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz.tmp.probs.npy",
@@ -139,11 +139,11 @@ rule genotype_without_helper_model_and_without_popoulation_priors:
         read_coverage=get_read_coverage_from_experiment
     shell:
         "/usr/bin/time -v kage genotype -c {input.node_counts} "
-        #"-i {input.index_bundle} "
-        "-g {input.variant_to_nodes} "
-        "-v {input.variants} "
-        "-A {input.model} "
-        "-x {input.tricky_variants} "
+        "-i {input.index_bundle} "
+        #"-g {input.variant_to_nodes} "
+        #"-v {input.variants} "
+        #"-A {input.model} "
+        #"-x {input.tricky_variants} "
         "-C CombinationModelGenotyper "
         "-t {config[n_threads]} "
         "-q 0.5 "
