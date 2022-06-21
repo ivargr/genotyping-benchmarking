@@ -53,18 +53,29 @@ rule simulate_reads:
 
 rule get_real_raw_reads:
     output:
-        reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
+        reads="data/{dataset}/{truth_dataset}_real_reads_raw.bam",
+        #reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
         #reads="data/{dataset}/{truth_dataset}_real_reads_{coverage,\d+}x.fq",
     params:
         url=get_real_data_reads_url
     conda: "envs/prepare_data.yml"
     shell:
-        "wget -O - {params.url} | bedtools bamtofastq -i /dev/stdin -fq /dev/stdout | gzip > {output.reads}"
+        "wget -O {output} {params.url} "  # | bedtools bamtofastq -i /dev/stdin -fq /dev/stdout | gzip > {output.reads}"
+
+
+rule convert_real_bam_reads_to_fq:
+    input:
+        "data/{dataset}/{truth_dataset}_real_reads_raw.bam"
+    output:
+        reads = "data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
+    conda: "envs/prepare_data.yml"
+    shell:
+        "bedtools bamtofastq -i {input} -fq /dev/stdout | gzip > {output.reads}"
 
 
 rule downsample_real_reads15x:
     input:
-        rules.get_real_raw_reads.output
+        rules.convert_real_bam_reads_to_fq.output
         #reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
     output:
         reads="data/{dataset}/{truth_dataset}_real_reads_15x.fq",
@@ -76,7 +87,7 @@ rule downsample_real_reads15x:
 
 rule downsample_real_reads30x:
     input:
-        rules.get_real_raw_reads.output
+        rules.convert_real_bam_reads_to_fq.output
         #reads="data/{dataset}/{truth_dataset}_real_reads_raw.fq.gz",
     output:
         reads="data/{dataset}/{truth_dataset}_real_reads_30x.fq",
