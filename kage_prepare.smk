@@ -591,11 +591,9 @@ rule get_variant_kmer_index_from_bundle:
         bundle="data/dataset2/index_2548all.npz"
     output:
         index="data/dataset2/kmer_index_only_variants_with_revcomp.npz"
-    run:
-        from graph_kmer_index.index_bundle import IndexBundle
-        bundle = IndexBundle.from_file(input.bundle)
-        kmer_index = bundle.indexes["KmerIndex"]
-        kmer_index.to_file(output.index)
+    conda: "envs/kage.yml"
+    script:
+        "scripts/get_variant_kmer_index_from_bundle.py"
 
 rule uncompress_index_bundle:
     input:
