@@ -602,7 +602,17 @@ rule uncompress_index_bundle:
         bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}.npz"
     output:
         bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed.npz"
-    run:
-        from graph_kmer_index.index_bundle import IndexBundle
-        bundle = IndexBundle.from_file(input.bundle)
-        bundle.to_file(output.bundle, compress=False)
+    conda: "envs/kage.yml"
+    script:
+        "scripts/uncompress_index_bundle.py"
+
+
+rule make_index_bundle_without_kmer_index:
+    input:
+        bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed.npz"
+    output:
+        bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed_without_kmerindex.npz"
+    conda: "envs/kage.yml"
+    script:
+        "scripts/make_index_bundle_without_kmer_index.py"
+

@@ -39,7 +39,7 @@ rule genotype:
         #helper_model="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
         #helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
         #tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
-        index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}_uncompressed.npz"
+        index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}_uncompressed_without_kmerindex.npz"
     output:
         genotypes="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz",
         probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz.tmp.probs.npy",

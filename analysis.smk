@@ -111,8 +111,8 @@ rule run_happy:
     input:
         genotypes="data/{dataset}/{run}.vcf.gz",
         truth_vcf="data/{dataset}/truth_{truth_dataset}.vcf.gz",
-        truth_vcf_only_callable="data/{dataset}/truthOnlyCallable_{truth_dataset}.vcf.gz",
-        truth_short_indels="data/{dataset}/truthShortIndels_{truth_dataset}.vcf.gz",
+        #truth_vcf_only_callable="data/{dataset}/truthOnlyCallable_{truth_dataset}.vcf.gz",
+        #truth_short_indels="data/{dataset}/truthShortIndels_{truth_dataset}.vcf.gz",
         truth_regions_file="data/{dataset}/truth_{truth_dataset}_regions.bed",
         ref="data/{dataset}/ref.fa"
     output:
