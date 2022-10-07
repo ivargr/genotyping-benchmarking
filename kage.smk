@@ -21,7 +21,7 @@ rule map:
     shell:
         #"/usr/bin/time -v kage count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
         #"/usr/bin/time -v kmer_mapper map -i {input.kmer_index_only_variants} -o {output.node_counts} -t {config[n_threads]} -c 1250000 -f {input.reads} -I {wildcards.max_index_frequency} 2> {output.benchmark_report}"
-        "/usr/bin/time -v kmer_mapper map_bnp -i {input.kmer_index_only_variants} -o {output.node_counts} -t {config[n_threads]} -c 125000 -f {input.reads} -I {wildcards.max_index_frequency} 2> {output.benchmark_report}"
+        "/usr/bin/time -v kmer_mapper map -i {input.kmer_index_only_variants} -o {output.node_counts} -t {config[n_threads]} -c 125000 -f {input.reads} -I {wildcards.max_index_frequency} 2> {output.benchmark_report}"
 
 
 def get_sample_name_from_experiment(wildcards):
