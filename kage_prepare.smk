@@ -111,7 +111,7 @@ rule make_genotype_txt_matrix:
     conda:
         "envs/prepare_data.yml"
     shell:
-        'gunzip -c {input} | grep -v "^#" | cut -f 10- | tr -d "|" | tr -d "\n" | tr -d "\t" | pigz -c > {output} '
+        'gunzip -c {input} | grep -v "^#" | cut -f 10- | tr -d "|" | tr "\n" "\t" | tr -d "\t" | pigz -c > {output} '
 
 
 rule make_phased_genotype_matrix:

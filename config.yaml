@@ -45,7 +45,7 @@ analysis_regions:
     n_nodes: "5000"
     vcf: "simulated_vcf"
     n_variants: 300
-    n_individuals: 500
+    n_individuals: 2548
 
   simulated_dataset1:
     region: "1:1-3000000"
