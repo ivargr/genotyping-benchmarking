@@ -70,14 +70,15 @@ rule create_simulated_truth_file:
 
 
 
+# makes a truth-file for non-simulated variants, i.e. variants downloaded
 rule create_truth_file:
     input:
-        vcf="data/{dataset}{n}/original_{truth_dataset}.vcf.gz",
-        regions_file="data/{dataset}{n}/original_{truth_dataset}_regions.bed"
+        vcf="data/dataset{n}/original_{truth_dataset}.vcf.gz",
+        regions_file="data/dataset{n}/original_{truth_dataset}_regions.bed"
 
     output:
-        vcf="data/{dataset}{n,\d+}/truth_{truth_dataset}.vcf.gz",
-        regions_file="data/{dataset}{n,\d+}/truth_{truth_dataset}_regions.bed"
+        vcf="data/dataset{n,\d+}/truth_{truth_dataset}.vcf.gz",
+        regions_file="data/dataset{n,\d+}/truth_{truth_dataset}_regions.bed"
     params:
         regions = get_dataset_regions_comma_separated,
         samples=samples_list

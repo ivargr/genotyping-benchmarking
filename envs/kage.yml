@@ -8,8 +8,8 @@ dependencies:
   - pip:
       - biopython>=0.1.0
       - npstructures==0.2.0
-      - kage-genotyper==0.0.30
-      - kmer_mapper==0.0.19
+      - kage-genotyper==0.1.2
+      - kmer_mapper==0.0.20
       - obgraph==0.0.26
       - tabulate
   - tabix

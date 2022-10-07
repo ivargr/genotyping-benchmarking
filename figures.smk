@@ -3,10 +3,10 @@ N_INDIVIDUALS_PANGENIE = [5, 15, 30, 50, 100]  #, 40, 50, 100, 200, 2058]
 N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 1000, 1750, 2548]  #, 40, 50, 100, 200, 2058]
 #N_INDIVIDUALS=[5, 15, 30, 50, 100, 250, 500, 550, 600, 650, 700, 800, 1000, 2548]  #, 40, 50, 100, 200, 2058]
 
-METHODS = ["us", "graphtyper", "bayestyper", "malva", "pangenie", "gatk"]
-#METHODS = ["us", "graphtyper", "malva", "pangenie", "gatk"]
 METHODS = ["usN2548all", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"]
-#METHODS = ["usN150all", "paragraph"]
+
+# without PanGenie:
+METHODS = ["usN2548all",  "bayestyper", "malva", "graphtyper", "gatk"]
 
 METHODS_JOINED = ",".join(METHODS)
 
