@@ -13,7 +13,7 @@ rule map:
         kmer_index_only_variants="data/{dataset}/kmer_index_only_variants_with_revcomp.npz"
     output:
         node_counts="data/{dataset}/{experiment}.I{max_index_frequency}.node_counts.npy",
-        benchmark_report="data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
+        #benchmark_report="data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
     params:
         n_nodes=get_dataset_n_nodes
     conda: "envs/kage.yml"
@@ -21,7 +21,7 @@ rule map:
     shell:
         #"/usr/bin/time -v kage count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
         #"/usr/bin/time -v kmer_mapper map -i {input.kmer_index_only_variants} -o {output.node_counts} -t {config[n_threads]} -c 1250000 -f {input.reads} -I {wildcards.max_index_frequency} 2> {output.benchmark_report}"
-        "/usr/bin/time -v kmer_mapper map -i {input.kmer_index_only_variants} -o {output.node_counts} -t {config[n_threads]} -c 125000 -f {input.reads} -I {wildcards.max_index_frequency} 2> {output.benchmark_report}"
+        "/usr/bin/time -v kmer_mapper map -i {input.kmer_index_only_variants} -o {output.node_counts} -t {config[n_threads]} -c 100000000 -f {input.reads} -I {wildcards.max_index_frequency} --debug True"
 
 
 def get_sample_name_from_experiment(wildcards):
@@ -45,7 +45,7 @@ rule genotype:
         genotypes="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz",
         probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz.tmp.probs.npy",
         count_probs="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz.tmp.count_probs.npy",
-        benchmark_report="data/{dataset}/benchmarks/usN{n_individuals}{subpopulation,[a-z]+}_{experiment}.tsv"
+        #benchmark_report="data/{dataset}/benchmarks/usN{n_individuals}{subpopulation,[a-z]+}_{experiment}.tsv"
     threads:
         config["n_threads"]
     benchmark:
@@ -70,7 +70,7 @@ rule genotype:
         "-o {output.genotypes}.tmp " 
         "--ignore-homo-ref True "
         "-B True "
-        "--sample-name-output {params.sample_name} 2> {output.benchmark_report} "
+        "--sample-name-output {params.sample_name} "  #2> {output.benchmark_report} "
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
 
 
