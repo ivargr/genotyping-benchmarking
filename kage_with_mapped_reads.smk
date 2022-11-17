@@ -112,7 +112,7 @@ rule kage_with_mapped_reads:
         config["n_threads"]
     benchmark:
         "data/{dataset}/benchmarks/kageMappedReadsN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment}-snakemake.tsv"
-    conda: "envs/kage.yml"
+    
     params:
         sample_name=get_sample_name_from_experiment,
         read_coverage=get_read_coverage_from_experiment

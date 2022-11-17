@@ -20,6 +20,11 @@ NOTE: All dependencies will automatically be installed by Conda when you run the
 ## Running the benchmarks
 The default is to use 16 CPU cores for each method, and 40 CPU-cores to create indexes etc. If you want to change this, edit config.yaml before running.
 
+All depenencies are handled by Conda (meaning you should use `--use-conda` with Snakemake) **except** Python dependencies, as we believe it is nice to have some control over these by installing them using your chosen Python interpreter. Thus, install Python requirements first into your chosen virtual environment:
+
+```bash
+pip install -r python_requirements.txt
+```
 
 ### Run on a simulated dataset
 Simply run the following. This will run all the genotypers on a small simulated dataset, specified in config.yaml and create a table with the results.

@@ -7,7 +7,7 @@ dependencies:
   - pip
   - pip:
       - obgraph>=0.0.27
-      - graph_read_simulator==0.0.10
+      - graph_read_simulator==0.0.11
   - bcftools
   - tabix
   - samtools

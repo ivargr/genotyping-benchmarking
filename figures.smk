@@ -8,6 +8,8 @@ METHODS = ["usN2548all", "pangenie", "bayestyper", "malva", "graphtyper", "gatk"
 # without PanGenie:
 METHODS = ["usN2548all"]  # ,  "bayestyper", "malva", "graphtyper", "gatk"]
 
+METHODS = ["usN150all", "paragraph"]
+
 METHODS_JOINED = ",".join(METHODS)
 
 def figure2_file_names(wildcards):

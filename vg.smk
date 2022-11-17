@@ -60,7 +60,7 @@ rule make_obgraph_all_chromosomes:
         gfa="data/{dataset}/graph.gfa"
     output:
         "data/{dataset}/obgraph_no_dummy_nodes.npz"
-    conda: "envs/kage.yml"
+    
     shell:
         "obgraph from_gfa -g {input.gfa} -o {output}"
 """
@@ -73,7 +73,7 @@ rule add_indel_nodes:
     output:
         obgraph="data/{dataset}/obgraph.npz",
         edge_mapping="data/{dataset}/obgraph.npz.edge_mapping"
-    conda: "envs/kage.yml"
+    
     shell:
         "obgraph add_indel_nodes -g {input.graph} -v {input.variants} -o {output.obgraph} && "
         "obgraph add_allele_frequencies -v {input.variants} -g {output.obgraph}"
@@ -85,7 +85,7 @@ rule make_obgraph_for_chromosome:
         gfa="data/{dataset}/graph_{chromosome}.gfa"
     output:
         "data/{dataset}/obgraph_no_dummy_nodes_chr{chromosome}.npz"
-    conda: "envs/kage.yml"
+    
     shell:
         "obgraph from_gfa -g {input.gfa} -o {output}"
 
@@ -96,7 +96,7 @@ rule add_dummy_nodes_to_obgraph:
         variants="data/{dataset}/variants_no_genotypes.vcf"
     output:
         "data/{dataset}/obgraph_chr{chromosome}.npz"
-    conda: "envs/kage.yml"
+    
     shell:
         "obgraph add_indel_nodes -g {input.graph} -v {intput.variants} -o {output}"
         "obgraph add_allele_frequencies -c {wildcards.chromosome} -v {input.variants} -g {output}"

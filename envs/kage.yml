@@ -1,16 +1,16 @@
-channels:
-  - bioconda
-  - conda-forge
-  - defaults
-dependencies:
-  - python=3.8
-  - pip
-  - pip:
-      - npstructures>=0.2.2
-      - kage-genotyper==0.1.5
-      - bionumpy>=0.2.1
-      - shared_memory_wrapper>=0.0.22
-      - kmer_mapper>=0.0.25
-      - obgraph>=0.0.27
-      - tabulate
-  - tabix
+#channels:
+#  - bioconda
+#  - conda-forge
+#  - defaults
+#dependencies:
+#  - python=3.8
+#  - pip
+#  - pip:
+#      - npstructures>=0.2.2
+#      - kage-genotyper==0.1.5
+#      - bionumpy>=0.2.4
+#      - shared_memory_wrapper>=0.0.22
+#      - kmer_mapper>=0.0.25
+#      - obgraph>=0.0.28
+#      - tabulate
+#  - tabix

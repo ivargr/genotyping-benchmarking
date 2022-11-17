@@ -33,8 +33,8 @@ ruleorder:
     downsample_real_reads30x > convert_fa_to_fq
 
 
-rule all:
-    input:
-        "data/dataset1/happy-hg002-kageNoHelperModelN250all_hg002_simulated_reads_15x.extended.csv",
+#rule all:
+    #input:
+        #"data/dataset1/happy-hg002-kageNoHelperModelN250all_hg002_simulated_reads_15x.extended.csv",
 
 

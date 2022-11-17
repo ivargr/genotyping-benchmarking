@@ -103,7 +103,7 @@ rule intersect_truth_file_with_callable_variants:
         vcf="data/{dataset}/variants_no_genotypes.vcf"
     output:
         "data/{dataset}/truthOnlyCallable_{truth_dataset}.vcf.gz"
-    conda: "envs/kage.yml"
+    
     shell:
         "obgraph intersect_vcfs -a {input.truth} -b {input.vcf} -o {output}.tmp && bgzip -f -c {output}.tmp > {output}"
 
@@ -257,7 +257,7 @@ rule find_variants_with_nonunique_kmers2:
         population_kmers="data/{dataset}/kmer_index.npz"
     output:
         "data/{dataset}/variants_with_nonunique_kmers.pickle"
-    conda: "envs/kage.yml"
+    
     shell:
         "python3 scripts/find_variants_with_nonunique_kmers.py "
         "{input.variants} "
@@ -279,7 +279,7 @@ rule analyse_variants_with_nonunique_kmers:
     output:
         "data/{dataset}/nonunique_variants_report.txt"
         
-    conda: "envs/kage.yml"
+    
     shell:
         "python3 scripts/analyse_variants_with_nonunnique_kmers.py "
         "{input.variants} "
