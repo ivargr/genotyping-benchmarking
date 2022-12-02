@@ -13,4 +13,5 @@ include:
 
 rule all:
     input:
-        OUTPUT_PATH + "table11.html"
+        "data/simulated_dataset2/happy-seed1-usN50all_seed1_simulated_reads_15x.extended.csv"
+        #OUTPUT_PATH + "table11.html"

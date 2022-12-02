@@ -24,8 +24,8 @@ def get_dataset_genome_size(wildcards):
 ruleorder:
     download_index_bundle > make_index_bundle
 
-ruleorder:
-    get_variant_kmer_index_from_bundle > make_variant_kmer_index_with_reverse_complements    
+#ruleorder:
+#    get_variant_kmer_index_from_bundle > make_variant_kmer_index_with_reverse_complements
 
 
 rule make_chromosome_graph:
@@ -146,7 +146,6 @@ rule make_count_model:
     input:
         haplotype_to_nodes="data/{dataset}/disc_backed_haplotype_to_nodes_{n_individuals}{subpopulation}.npz",
         graph="data/{dataset}/obgraph.npz",
-        #counter_index="data/{dataset}/counter_index_only_variants_with_revcomp.npz"
         counter_index="data/{dataset}/kmer_index_only_variants_with_revcomp.npz"
     output:
         "data/{dataset}/sampling_count_model_{n_individuals,\d+}{subpopulation}.npz"
@@ -159,9 +158,7 @@ rule make_count_model:
     shell:
         "kage sample_node_counts_from_population -g {input.graph} "
         "-H {input.haplotype_to_nodes} "
-        #"-H data/dataset1/disc_backed_haplotype_to_nodes "
-        #"--limit-to-n-individuals 25 "
-        "-i {input.counter_index} -o {output} -t 40 --max-count 15"
+        "-i {input.counter_index} -o {output} -t 20 --max-count 15"
 
 
 rule refine_count_model:
@@ -427,7 +424,17 @@ rule make_variant_kmer_index_with_reverse_complements:
         index = "data/{dataset}/kmer_index_only_variants_with_revcomp.npz",
     
     shell:
-        "graph_kmer_index make_from_flat -o {output.index} -f {input.variant_kmers} -m 200000033 -k {config[k]} -r True"
+        "graph_kmer_index make_from_flat -o {output.index} -f {input.variant_kmers} -m 200000033 -k {config[k]} -r True --skip-frequencies True"
+
+
+rule make_variant_kmer_index_without_reverse_complements:
+    input:
+        variant_kmers="data/{dataset}/variant_kmers.npz",
+    output:
+        index="data/{dataset}/kmer_index_only_variants_without_revcomp.npz",
+
+    shell:
+        "graph_kmer_index make_from_flat -o {output.index} -f {input.variant_kmers} -m 130000001 -k {config[k]} --skip-frequencies True"
 
 
 rule make_numpy_variants:
@@ -474,48 +481,10 @@ rule make_kmer_index:
         "graph_kmer_index make_from_flat -o {output.kmer_index} -f {input.flat_kmers} -m 20000033 "
 
 
-rule make_kmer_count_model:
-    input:
-        kmer_index="data/{dataset}/kmer_index.npz",
-        reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
-        variant_to_nodes="data/{dataset}/variant_to_nodes.npz"
-    output:
-        haplotype_model="data/{dataset}/model.npz",
-        genotype_model= "data/{dataset}/genotype_model.npz",
-    benchmark: "data/{dataset}/benchmarks/make_kmer_count_model.tsv"
-    params:
-        n_nodes=get_dataset_n_nodes
-    threads: config["n_threads_data_quarter"]
-    resources:
-        mem_gb=120
-    
-    shell:
-        "kage model -i {input.kmer_index} -g {input.variant_to_nodes} -r {input.reverse_variant_kmers} -m {params.n_nodes} -o {output.haplotype_model} -k {config[k]} -t {config[n_threads_data_quarter]} -V v3 && "
-        "kage make_genotype_model -v {input.variant_to_nodes} -n {output.haplotype_model} -o {output.genotype_model}"
-
-rule make_combination_model:
-    input:
-        kmer_index="data/{dataset}/kmer_index.npz",
-        reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
-        variant_to_nodes="data/{dataset}/variant_to_nodes.npz"
-    output:
-        model="data/{dataset}/combination_model.npz",
-    benchmark: "data/{dataset}/benchmarks/make_combination_model.tsv"
-    params:
-        n_nodes=get_dataset_n_nodes
-    threads: config["n_threads_data_quarter"]
-    resources:
-        mem_gb=120
-    
-    shell:
-        "kage model -i {input.kmer_index} -g {input.variant_to_nodes} -r "
-        "{input.reverse_variant_kmers} -m {params.n_nodes} -o {output.model} "
-        "-k {config[k]} -t {config[n_threads_data_quarter]} -V v3 "
 
 rule find_tricky_variants:
     input:
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        #model= "data/{dataset}/combination_model.npz",
         model= "data/{dataset}/sampling_count_model_{n_individuals}{subpopulation}.npz",
         reverse_variant_kmers="data/{dataset}/reverse_variant_kmers.npz",
     output:
@@ -582,6 +551,7 @@ rule download_index_bundle:
         "wget -O {output} https://zenodo.org/record/6674055/files/index_2548all.npz?download=1"
 
 
+"""
 rule get_variant_kmer_index_from_bundle:
     input:
         bundle="data/dataset2/index_2548all.npz"
@@ -590,15 +560,21 @@ rule get_variant_kmer_index_from_bundle:
     
     script:
         "scripts/get_variant_kmer_index_from_bundle.py"
+"""
+
 
 rule uncompress_index_bundle:
     input:
         bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}.npz"
     output:
         bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed.npz"
-    
-    script:
-        "scripts/uncompress_index_bundle.py"
+
+    run:
+        #from graph_kmer_index.index_bundle import IndexBundle
+        from kage.indexing.index_bundle import IndexBundle
+        bundle = IndexBundle.from_file(input[0])
+        bundle.to_file(output[0], compress=False)
+
 
 
 rule make_index_bundle_without_kmer_index:
@@ -606,7 +582,11 @@ rule make_index_bundle_without_kmer_index:
         bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed.npz"
     output:
         bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed_without_kmerindex.npz"
-    
-    script:
-        "scripts/make_index_bundle_without_kmer_index.py"
+
+    run:
+        #from graph_kmer_index.index_bundle import IndexBundle
+        from kage.indexing.index_bundle import IndexBundle
+        bundle = IndexBundle.from_file(input[0])
+        bundle.indexes["kmer_index"] = None
+        bundle.to_file(output[0],compress=False)
 

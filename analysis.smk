@@ -118,6 +118,7 @@ rule run_happy:
         ref="data/{dataset}/ref.fa"
     output:
         output_file="data/{dataset}/happy-{truth_dataset}-{run}.extended.csv",
+        summary_output_file="data/{dataset}/happy-{truth_dataset}-{run}.summary.csv",
         #output_file_only_callable="data/{dataset}/happy-{truth_dataset}-{run}-only-callable.extended.csv",
         #output_file_short_indels="data/{dataset}/happy-{truth_dataset}-{run}-short-indels.extended.csv",
     conda:

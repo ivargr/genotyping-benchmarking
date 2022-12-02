@@ -16,7 +16,7 @@ rule map:
         #benchmark_report="data/{dataset}/benchmarks/mapI{max_index_frequency}_{experiment}.tsv"
     params:
         n_nodes=get_dataset_n_nodes
-    
+
     threads: config["n_threads"]
     shell:
         #"/usr/bin/time -v kage count -i {input.kmer_index_only_variants} -n {output.node_counts} -t {config[n_threads]} -c 1000000 -r {input.reads} -M {params.n_nodes} --skip-chaining True -I {wildcards.max_index_frequency}"
@@ -57,18 +57,11 @@ rule genotype:
     shell:
         "/usr/bin/time -v kage genotype -c {input.node_counts} "
         "-i {input.index_bundle} "
-        #"-g {input.variant_to_nodes} " 
-        #"-v {input.variants} " 
-        #"-A {input.model} " 
-        #"-f {input.helper_model} "
-        #"-F {input.helper_model_combo_matrix} "
-        #"-x {input.tricky_variants} "
-        "-C CombinationModelGenotyper " 
         "-t {config[n_threads]} "
         "-q 0.5 " 
         "--average-coverage {params.read_coverage} "
         "-o {output.genotypes}.tmp " 
-        "--ignore-homo-ref True "
+        #"--ignore-homo-ref True "
         "-B True "
         "--sample-name-output {params.sample_name} "  #2> {output.benchmark_report} "
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "
@@ -106,7 +99,6 @@ rule genotype_without_helper_model:
         "-v {input.variants} "
         "-A {input.model} "
         "-x {input.tricky_variants} "
-        "-C CombinationModelGenotyper "
         "-G {input.genotype_frequencies} "
         "-t {config[n_threads]} "
         "-q 0.5 "
@@ -141,11 +133,6 @@ rule genotype_without_helper_model_and_without_popoulation_priors:
     shell:
         "/usr/bin/time -v kage genotype -c {input.node_counts} "
         "-i {input.index_bundle} "
-        #"-g {input.variant_to_nodes} "
-        #"-v {input.variants} "
-        #"-A {input.model} "
-        #"-x {input.tricky_variants} "
-        "-C CombinationModelGenotyper "
         "-t {config[n_threads]} "
         "-q 0.5 "
         "--average-coverage {params.read_coverage} "
@@ -190,9 +177,6 @@ rule kage_naive:
         "-v {input.variants} "
         "-G {input.genotype_frequencies} "
         "-o {output.genotypes}.tmp "
-        #"-C NumpyGenotyper "
-        #"-A {input.model} "
-        "-C CombinationModelGenotyper "
         "--ignore-helper-variants True "
         "-t 1 -q 0.3 "
         "--average-coverage {params.read_coverage} "

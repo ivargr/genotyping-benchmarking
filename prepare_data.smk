@@ -8,6 +8,9 @@ def get_dataset_regions(wildcards):
 def get_dataset_regions_comma_separated(wildcards):
     return config["analysis_regions"]["dataset" + wildcards.number]["region"].replace(" ", ",")
 
+def get_dataset2_regions_comma_separated(wildcards):
+    return config["analysis_regions"]["dataset2"]["region"].replace(" ", ",")
+
 def only_snps_command(wildcards):
     if "only_snps" in config["analysis_regions"]["dataset" + wildcards.number]:
         return " | bcftools filter -i 'TYPE=\"snp\"' /dev/stdin -O z"
@@ -69,16 +72,27 @@ rule prepare_dataset_vcf:
     params:
         regions=get_dataset_regions_comma_separated,
         only_snps_command=only_snps_command
-    #conda: "envs/prepare_data.yml"
-    run:
-        #"bcftools view -O z --regions {config[analysis_regions][{dataset}]} variants.vcf.gz > {output} && tabix -p vcf {output} "
-        if wildcards.number == "2":
-            print("Simply copying variants since we're on whole genome")
-            #shell("cp {input} {output} && cp {input}.tbi {output}.tbi")
-            shell("zcat {input} | python3 scripts/filter_variants_with_n.py | bgzip -c > {output} && tabix -p vcf -f {output}")
-        else:
-            print("Subsetting variants")
-            shell("bcftools view --regions {params.regions} {input.vcf} {params.only_snps_command} | python3 scripts/filter_variants_with_n.py | bgzip -c > {output} && tabix -f -p vcf {output} ")
+    conda: "envs/prepare_data.yml"
+    shell:
+        "bcftools view --regions {params.regions} {input.vcf} {params.only_snps_command} | python3 scripts/filter_variants_with_n.py | bgzip -c > {output} && tabix -f -p vcf {output} "
+
+
+# version of the above rule for dataset2 to save some time
+# don't need to use bcftools view which is slow (since we are on whole genome)
+ruleorder:
+    prepare_dataset_vcf_dataset2 > prepare_dataset_vcf
+
+rule prepare_dataset_vcf_dataset2:
+    input:
+        vcf="data/variants.vcf.gz"
+    output:
+        "data/dataset2/variants.vcf.gz"
+    params:
+        regions=get_dataset2_regions_comma_separated,
+    conda: "envs/prepare_data.yml"
+    shell:
+        "zcat {input} | python3 scripts/filter_variants_with_n.py | bgzip -c > {output} && tabix -p vcf -f {output}"
+
 
 
 rule prepare_svdataset_vcf:

@@ -21,8 +21,8 @@ n_threads_data_quarter:
   25
 
 hg38_2bit_file:
-  #"https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit"
-  "http://ivarg.ddns.net/hg38.2bit"
+  "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit"
+  #"http://ivarg.ddns.net/hg38.2bit"
 
 random_seed:
   1
