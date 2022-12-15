@@ -21,8 +21,8 @@ def get_dataset_genome_size(wildcards):
 
 # some ruleorders that enable getting stuff from pre-built index bundles
 # comment out along with the rules to make everything froms scratch
-ruleorder:
-    download_index_bundle > make_index_bundle
+#ruleorder:
+#    download_index_bundle > make_index_bundle
 
 #ruleorder:
 #    get_variant_kmer_index_from_bundle > make_variant_kmer_index_with_reverse_complements
@@ -158,7 +158,7 @@ rule make_count_model:
     shell:
         "kage sample_node_counts_from_population -g {input.graph} "
         "-H {input.haplotype_to_nodes} "
-        "-i {input.counter_index} -o {output} -t 20 --max-count 15"
+        "-i {input.counter_index} -o {output} -t 16 --max-count 15"
 
 
 rule refine_count_model:
@@ -544,11 +544,11 @@ rule make_index_bundle:
 
 
 # can be used to download specific index bundle directly from Zenodo instead of building from scratch
-rule download_index_bundle:
-    output:
-        "data/dataset2/index_2548all.npz"
-    shell:
-        "wget -O {output} https://zenodo.org/record/6674055/files/index_2548all.npz?download=1"
+#rule download_index_bundle:
+#    output:
+#        "data/dataset2/index_2548all.npz"
+#    shell:
+#        "wget -O {output} https://zenodo.org/record/6674055/files/index_2548all.npz?download=1"
 
 
 """
