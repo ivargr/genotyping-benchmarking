@@ -417,6 +417,7 @@ rule make_reverse_variant_kmer_index:
         "graph_kmer_index make_reverse -f {input} -o {output}"
 
 
+
 rule make_variant_kmer_index_with_reverse_complements:
     input:
         variant_kmers = "data/{dataset}/variant_kmers.npz",
