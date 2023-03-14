@@ -34,12 +34,6 @@ def get_read_coverage_from_experiment(wildcards):
 rule genotype:
     input:
         node_counts="data/{dataset}/{experiment}.I1000.node_counts.npy",
-        #variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
-        #variants="data/{dataset}/numpy_variants.npz",
-        #model="data/{dataset}/refined_sampling_count_model_{n_individuals}all.npz",
-        #helper_model="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
-        #helper_model_combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
-        #tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
         index_bundle="data/{dataset}/index_{n_individuals}{subpopulation}_uncompressed_without_kmerindex.npz"
     output:
         genotypes="data/{dataset}/usN{n_individuals,\d+}{subpopulation,[a-z]+}_{experiment,[A-Za-z0-9_]+}.vcf.gz",
@@ -61,7 +55,9 @@ rule genotype:
         "-q 0.5 " 
         "--average-coverage {params.read_coverage} "
         "-o {output.genotypes}.tmp " 
-        #"--ignore-homo-ref True "
+        #"--limit-model-count 15 "
+        "--debug True "
+        "--ignore-homo-ref True "
         "-B True "
         "--sample-name-output {params.sample_name} "  #2> {output.benchmark_report} "
         "&& bgzip -c {output.genotypes}.tmp > {output.genotypes} "

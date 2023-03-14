@@ -158,7 +158,7 @@ rule make_count_model:
     shell:
         "kage sample_node_counts_from_population -g {input.graph} "
         "-H {input.haplotype_to_nodes} "
-        "-i {input.counter_index} -o {output} -t 16 --max-count 15"
+        "-i {input.counter_index} -o {output} -t 20 --max-count 15"
 
 
 rule refine_count_model:
@@ -169,6 +169,15 @@ rule refine_count_model:
     
     shell:
         "kage refine_sampling_model -s {input.model} -v {input.variant_to_nodes} -o {output}"
+
+
+rule make_sparse_count_model:
+    input:
+        model="data/{dataset}/refined_sampling_count_model_{n_individuals,\d+}{subpopulation}.npz"
+    output:
+        "data/{dataset}/sparse_refined_sampling_count_model_{n_individuals,\d+}{subpopulation}.npz"
+    shell:
+        "kage make_sparse_count_model -s {input.model} -o {output}"
 
 
 rule make_haplotype_to_nodes:
@@ -524,7 +533,7 @@ rule make_index_bundle:
     input:
         variant_to_nodes="data/{dataset}/variant_to_nodes.npz",
         numpy_variants="data/{dataset}/numpy_variants.npz",
-        model="data/{dataset}/refined_sampling_count_model_{n_individuals}{subpopulation}.npz",
+        model="data/{dataset}/sparse_refined_sampling_count_model_{n_individuals}{subpopulation}.npz",
         tricky_variants="data/{dataset}/tricky_variants_{n_individuals}{subpopulation}.npy",
         helper_variants="data/{dataset}/helper_model_{n_individuals}{subpopulation}.npy",
         combo_matrix="data/{dataset}/helper_model_{n_individuals}{subpopulation}_combo_matrix.npy",
@@ -589,5 +598,20 @@ rule make_index_bundle_without_kmer_index:
         from kage.indexing.index_bundle import IndexBundle
         bundle = IndexBundle.from_file(input[0])
         bundle.indexes["kmer_index"] = None
+        bundle.to_file(output[0],compress=False)
+
+
+rule make_minimal_index_bundle:
+    input:
+        bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed.npz"
+    output:
+        bundle="data/{dataset}/index_{n_individuals,\d+}{subpop,[a-z]+}_uncompressed_minimal.npz"
+
+    run:
+        #from graph_kmer_index.index_bundle import IndexBundle
+        from kage.indexing.index_bundle import IndexBundle
+        bundle = IndexBundle.from_file(input[0])
+        bundle.indexes["kmer_index"] = None
+        bundle.indexes["numpy_variants"] = None
         bundle.to_file(output[0],compress=False)
 
